@@ -64,8 +64,9 @@
         {{-- Logo --}}
         <a href="{{ auth('admin')->check() ? route('admin.dashboard') : route('store.dashboard') }}"
            class="flex items-center gap-2.5 mr-3 shrink-0">
-            <div class="w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow">
-                <i class="fas fa-fire text-base" style="color:#2D3A8C;"></i>
+            <div class="w-8 h-8 rounded-lg flex items-center justify-center shadow"
+                 style="background:linear-gradient(135deg,#fbbf24,#f59e0b);">
+                <i class="fas fa-fire text-base" style="color:#1e3a8a;"></i>
             </div>
             <span class="text-white font-bold text-base tracking-wide hidden sm:inline">GazManager</span>
         </a>
