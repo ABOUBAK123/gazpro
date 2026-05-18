@@ -6,13 +6,16 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ config('app.name', 'GazManager') }} - @yield('title', 'Tableau de bord')</title>
 
-    {{-- Assets locaux (pas de dépendance CDN) --}}
+    {{-- Assets --}}
     <script>
         tailwind = { config: { theme: { extend: { colors: { brand: '#2D3A8C' } } } } }
     </script>
     <script src="{{ asset('tailwind.min.js') }}"></script>
     <script src="{{ asset('alpine.min.js') }}" defer></script>
-    <link rel="stylesheet" href="{{ asset('fa.min.css') }}">
+    {{-- Font Awesome via CDN (fiable en prod) avec fallback local --}}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+          integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LQ=="
+          crossorigin="anonymous" referrerpolicy="no-referrer">
 
     {{-- 5. Styles personnalisés via type="text/tailwindcss" → @apply fonctionne --}}
     <style type="text/tailwindcss">
