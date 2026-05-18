@@ -14,9 +14,7 @@
     <script>tailwind = { config: {} }</script>
     <script src="{{ asset('tailwind.min.js') }}"></script>
     <script src="{{ asset('alpine.min.js') }}" defer></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
-          integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LQ=="
-          crossorigin="anonymous" referrerpolicy="no-referrer">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
     <style type="text/tailwindcss">
         * { -webkit-tap-highlight-color: transparent; }
