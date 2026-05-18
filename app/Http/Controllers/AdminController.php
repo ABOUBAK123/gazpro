@@ -122,6 +122,7 @@ class AdminController extends Controller
             'mobile_providers' => $request->mobile_providers ? explode(',', $request->mobile_providers) : [],
         ]);
 
+        // CinetPay gateway keys
         if ($request->filled('cinetpay_api_key')) {
             AppSetting::set('cinetpay_api_key', $request->cinetpay_api_key);
         }
@@ -129,6 +130,43 @@ class AdminController extends Controller
             AppSetting::set('cinetpay_site_id', $request->cinetpay_site_id);
         }
 
-        return back()->with('success', 'Paramètres d\'abonnement mis à jour.');
+        // Per-provider settings (active toggle + API credentials)
+        $providers = ['orange_money', 'mtn_money', 'wave', 'moov_money', 'visa_card'];
+        foreach ($providers as $key) {
+            $providerData = AppSetting::get("payment_provider_{$key}", []);
+            if (!is_array($providerData)) $providerData = [];
+
+            $providerData['active'] = $request->boolean("provider_{$key}_active");
+
+            foreach ($request->input("provider_{$key}", []) as $field => $value) {
+                if ($field !== 'active') {
+                    $providerData[$field] = $value;
+                }
+            }
+
+            AppSetting::set("payment_provider_{$key}", $providerData);
+        }
+
+        return back()->with('success', 'Paramètres mis à jour.');
+    }
+
+    public function uploadPaymentLogos(Request $request)
+    {
+        $request->validate([
+            'logos.*' => 'nullable|image|mimes:png,jpg,jpeg,svg,webp|max:512',
+        ]);
+
+        $providers = ['orange_money', 'mtn_money', 'wave', 'moov_money', 'visa_card'];
+
+        foreach ($providers as $key) {
+            if ($request->hasFile("logos.{$key}") && $request->file("logos.{$key}")->isValid()) {
+                $file     = $request->file("logos.{$key}");
+                $filename = $key . '.' . $file->getClientOriginalExtension();
+                $file->move(public_path('images/payment-logos'), $filename);
+                AppSetting::set("payment_logo_{$key}", $filename);
+            }
+        }
+
+        return back()->with('success', 'Logos mis à jour avec succès.');
     }
 }

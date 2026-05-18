@@ -61,8 +61,9 @@ Route::middleware(\App\Http\Middleware\AuthenticateAdmin::class)->prefix('admin'
     Route::post('/currencies',             [AdminController::class, 'storeCurrency'])->name('currencies.store');
     Route::put('/currencies/{currency}',   [AdminController::class, 'updateCurrency'])->name('currencies.update');
     Route::delete('/currencies/{currency}',[AdminController::class, 'deleteCurrency'])->name('currencies.destroy');
-    Route::get('/subscription',  [AdminController::class, 'subscriptionSettings'])->name('subscription');
-    Route::put('/subscription',  [AdminController::class, 'updateSubscription'])->name('subscription.update');
+    Route::get('/subscription',        [AdminController::class, 'subscriptionSettings'])->name('subscription');
+    Route::put('/subscription',        [AdminController::class, 'updateSubscription'])->name('subscription.update');
+    Route::post('/subscription/logos', [AdminController::class, 'uploadPaymentLogos'])->name('subscription.logos');
 
     // Accounts management
     Route::get('/comptes',                     [AccountController::class, 'index'])->name('accounts');

@@ -121,30 +121,39 @@
             </div>
         </div>
 
-        {{-- Méthodes de paiement --}}
+        {{-- Méthodes de paiement (dynamiques depuis les settings admin) --}}
+        @php
+            $activeMethods = [
+                'orange_money' => ['label'=>'Orange Money','color'=>'#FF6600','bg'=>'#FFF3EB','border'=>'#FFBB99'],
+                'mtn_money'    => ['label'=>'MTN MoMo',    'color'=>'#FFCC00','bg'=>'#FFFDE6','border'=>'#FFE680'],
+                'wave'         => ['label'=>'Wave',         'color'=>'#1DC8EE','bg'=>'#E8F9FD','border'=>'#99E5F5'],
+                'moov_money'   => ['label'=>'Moov Money',  'color'=>'#0055A5','bg'=>'#E8F0FA','border'=>'#99BBEE'],
+                'visa_card'    => ['label'=>'Visa / Mastercard','color'=>'#1A1F71','bg'=>'#EEEFFE','border'=>'#AAAADD'],
+            ];
+            $logoBase2 = asset('images/payment-logos');
+        @endphp
         <div class="card mb-5 py-4">
             <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Méthodes de paiement acceptées</p>
             <div class="flex flex-wrap gap-3 items-center">
-                <div class="flex items-center gap-1.5 bg-orange-50 border border-orange-200 rounded-lg px-3 py-1.5">
-                    <span class="w-3 h-3 rounded-full bg-orange-500 inline-block"></span>
-                    <span class="text-sm font-medium text-orange-700">Orange Money</span>
+                @foreach($activeMethods as $mKey => $m)
+                @php
+                    $pd       = \App\Models\AppSetting::get("payment_provider_{$mKey}", []);
+                    $isOn     = !empty($pd) ? ($pd['active'] ?? false) : true;
+                    $logoFile = \App\Models\AppSetting::get("payment_logo_{$mKey}", '');
+                    $logoUrl2 = $logoFile ? $logoBase2 . '/' . $logoFile : null;
+                @endphp
+                @if($isOn)
+                <div class="flex items-center gap-2 border rounded-xl px-3 py-2 shadow-xs"
+                     style="background:{{ $m['bg'] }}; border-color:{{ $m['border'] }};">
+                    @if($logoUrl2)
+                        <img src="{{ $logoUrl2 }}" alt="{{ $m['label'] }}" class="h-6 w-auto object-contain">
+                    @else
+                        <span class="w-3 h-3 rounded-full inline-block shrink-0" style="background:{{ $m['color'] }}"></span>
+                        <span class="text-sm font-medium" style="color:{{ $m['color'] }}">{{ $m['label'] }}</span>
+                    @endif
                 </div>
-                <div class="flex items-center gap-1.5 bg-yellow-50 border border-yellow-200 rounded-lg px-3 py-1.5">
-                    <span class="w-3 h-3 rounded-full bg-yellow-500 inline-block"></span>
-                    <span class="text-sm font-medium text-yellow-700">MTN MoMo</span>
-                </div>
-                <div class="flex items-center gap-1.5 bg-blue-50 border border-blue-200 rounded-lg px-3 py-1.5">
-                    <span class="w-3 h-3 rounded-full bg-blue-500 inline-block"></span>
-                    <span class="text-sm font-medium text-blue-700">Wave</span>
-                </div>
-                <div class="flex items-center gap-1.5 bg-purple-50 border border-purple-200 rounded-lg px-3 py-1.5">
-                    <span class="w-3 h-3 rounded-full bg-purple-500 inline-block"></span>
-                    <span class="text-sm font-medium text-purple-700">Moov Money</span>
-                </div>
-                <div class="flex items-center gap-1.5 bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5">
-                    <i class="fas fa-credit-card text-gray-500 text-xs"></i>
-                    <span class="text-sm font-medium text-gray-700">Visa / Mastercard</span>
-                </div>
+                @endif
+                @endforeach
             </div>
         </div>
 
