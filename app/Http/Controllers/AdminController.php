@@ -8,6 +8,7 @@ use App\Models\Store;
 use App\Models\GlobalCurrency;
 use App\Models\SubscriptionSetting;
 use App\Models\Payment;
+use App\Models\AppSetting;
 
 class AdminController extends Controller
 {
@@ -115,11 +116,18 @@ class AdminController extends Controller
 
         $settings = SubscriptionSetting::current();
         $settings->update([
-            'monthly_price'   => $request->monthly_price,
-            'yearly_price'    => $request->yearly_price,
-            'currency'        => $request->currency,
+            'monthly_price'    => $request->monthly_price,
+            'yearly_price'     => $request->yearly_price,
+            'currency'         => $request->currency,
             'mobile_providers' => $request->mobile_providers ? explode(',', $request->mobile_providers) : [],
         ]);
+
+        if ($request->filled('cinetpay_api_key')) {
+            AppSetting::set('cinetpay_api_key', $request->cinetpay_api_key);
+        }
+        if ($request->filled('cinetpay_site_id')) {
+            AppSetting::set('cinetpay_site_id', $request->cinetpay_site_id);
+        }
 
         return back()->with('success', 'Paramètres d\'abonnement mis à jour.');
     }

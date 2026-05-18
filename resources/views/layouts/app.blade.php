@@ -159,6 +159,17 @@
                 <i class="fas fa-star"></i>Fidélité
             </a>
             @endif
+            <a href="{{ route('subscription.index') }}"
+               class="nav-item {{ request()->routeIs('subscription.*') ? 'active' : '' }}">
+                @php $subBadge = !auth('store')->user()?->hasActiveSubscription() && auth('store')->check(); @endphp
+                <i class="fas fa-credit-card"></i>
+                <span class="flex items-center gap-1">
+                    Abonnement
+                    @if($subBadge)
+                        <span class="w-2 h-2 rounded-full bg-red-400 inline-block"></span>
+                    @endif
+                </span>
+            </a>
             <a href="{{ route('profile.index') }}"
                class="nav-item {{ request()->routeIs('profile.*') ? 'active' : '' }}">
                 <i class="fas fa-user-circle"></i>Profil

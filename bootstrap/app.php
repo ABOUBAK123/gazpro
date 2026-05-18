@@ -11,6 +11,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Exempt CinetPay IPN webhook from CSRF verification
+        $middleware->validateCsrfTokens(except: [
+            '/abonnement/notify',
+        ]);
         $middleware->alias([
             'auth.admin' => \App\Http\Middleware\AuthenticateAdmin::class,
             'auth.store' => \App\Http\Middleware\AuthenticateStore::class,
