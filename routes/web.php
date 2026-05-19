@@ -107,8 +107,9 @@ Route::middleware(\App\Http\Middleware\AuthenticateAdmin::class)->prefix('admin'
     Route::post('/parametres/brands/{brand}/logo', [AdminSettingsController::class, 'uploadBrandLogo'])->name('settings.brand.logo');
     Route::post('/parametres/weights',     [AdminSettingsController::class, 'addWeight'])->name('settings.weight.add');
     Route::delete('/parametres/weights',   [AdminSettingsController::class, 'deleteWeight'])->name('settings.weight.delete');
-    Route::post('/parametres/terms',       [AdminSettingsController::class, 'saveTerms'])->name('settings.terms');
-    Route::post('/parametres/email',       [AdminSettingsController::class, 'saveEmailConfig'])->name('settings.email');
+    Route::post('/parametres/terms',         [AdminSettingsController::class, 'saveTerms'])->name('settings.terms');
+    Route::post('/parametres/email',         [AdminSettingsController::class, 'saveEmailConfig'])->name('settings.email');
+    Route::post('/parametres/delivery-fee', [AdminSettingsController::class, 'saveDeliveryFee'])->name('settings.delivery_fee');
 });
 
 // Store (manager + staff) routes

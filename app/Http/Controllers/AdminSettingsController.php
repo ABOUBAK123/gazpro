@@ -13,8 +13,16 @@ class AdminSettingsController extends Controller
         return array_map(fn($b) => is_string($b) ? ['name' => $b, 'logo' => null] : $b, $brands);
     }
 
+    public function saveDeliveryFee(Request $request)
+    {
+        $request->validate(['delivery_fee' => 'required|numeric|min:0']);
+        AppSetting::set('delivery_fee', (float) $request->delivery_fee);
+        return back()->with('success', 'Frais de livraison mis à jour.');
+    }
+
     public function index()
     {
+        $deliveryFee = AppSetting::get('delivery_fee', 0);
         $brands = $this->normalizeBrands(AppSetting::get('brands', ['Total', 'Shell', 'Oryx', 'Sodigaz', 'Petrogaz']));
         $weights = AppSetting::get('weights', [
             ['value' => '6kg',  'code' => 'B6'],
@@ -31,7 +39,7 @@ class AdminSettingsController extends Controller
             'encryption' => 'tls',
         ]);
 
-        return view('admin.settings', compact('brands', 'weights', 'terms', 'emailConfig'));
+        return view('admin.settings', compact('brands', 'weights', 'terms', 'emailConfig', 'deliveryFee'));
     }
 
     public function addBrand(Request $request)

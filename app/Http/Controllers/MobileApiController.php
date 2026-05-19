@@ -62,7 +62,10 @@ class MobileApiController extends Controller
             ->get()
             ->map(fn($store) => $this->formatStore($store));
 
-        return response()->json(['data' => $stores]);
+        return response()->json([
+            'data'        => $stores,
+            'deliveryFee' => (float) AppSetting::get('delivery_fee', 0),
+        ]);
     }
 
     public function storeDetail(string $id)
@@ -71,7 +74,10 @@ class MobileApiController extends Controller
             ->with(['stock' => fn($q) => $q->where('quantity', '>', 0)])
             ->findOrFail($id);
 
-        return response()->json(['data' => $this->formatStore($store)]);
+        return response()->json([
+            'data'        => $this->formatStore($store),
+            'deliveryFee' => (float) AppSetting::get('delivery_fee', 0),
+        ]);
     }
 
     private ?array $brandLogos = null;

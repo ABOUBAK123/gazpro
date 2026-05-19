@@ -115,6 +115,11 @@ class LivreurController extends Controller
             ->get()
             ->map(fn($o) => $this->formatOrderJson($o));
 
+        $deliveryFee    = (float) \App\Models\AppSetting::get('delivery_fee', 0);
+        $totalEarnings  = $livreur->orders()
+            ->where('status', 'delivered')
+            ->count() * $deliveryFee;
+
         return response()->json([
             'livreur' => [
                 'id'           => $livreur->id,
@@ -122,8 +127,10 @@ class LivreurController extends Controller
                 'phone'        => $livreur->phone,
                 'is_available' => (bool) $livreur->is_available,
             ],
-            'active'  => $active,
-            'history' => $history,
+            'active'       => $active,
+            'history'      => $history,
+            'deliveryFee'  => $deliveryFee,
+            'totalEarnings'=> $totalEarnings,
         ]);
     }
 

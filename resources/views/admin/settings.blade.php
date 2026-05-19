@@ -23,6 +23,26 @@
 
     {{-- Brands & Weights --}}
     <div x-show="tab==='brands'">
+
+        {{-- Frais de livraison --}}
+        <div class="card mb-6 max-w-sm">
+            <h3 class="font-semibold text-gray-800 mb-4">
+                <i class="fas fa-truck text-green-500 mr-2"></i>Frais de livraison (app mobile)
+            </h3>
+            <form action="{{ route('admin.settings.delivery_fee') }}" method="POST" class="flex items-end gap-3">
+                @csrf
+                <div class="flex-1">
+                    <label class="form-label">Montant (FCFA)</label>
+                    <input type="number" name="delivery_fee" value="{{ $deliveryFee }}"
+                           min="0" step="50" class="form-input" placeholder="0">
+                </div>
+                <button type="submit" class="btn btn-primary whitespace-nowrap">
+                    <i class="fas fa-save mr-1"></i>Enregistrer
+                </button>
+            </form>
+            <p class="text-xs text-gray-400 mt-2">Affiché sur chaque bouteille dans l'app client, inclus dans le total du panier.</p>
+        </div>
+
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
             {{-- Brands --}}
