@@ -19,6 +19,7 @@ use App\Http\Controllers\ClientController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProfitController;
 use App\Http\Controllers\SubscriptionController;
+use App\Http\Controllers\MobileApiController;
 
 // Redirect root
 Route::get('/', fn() => redirect()->route('login'));
@@ -43,9 +44,24 @@ Route::patch('/livreur/{token}/commandes/{order}/statut',  [LivreurController::c
 Route::get('/commander',  [OrderController::class, 'clientForm'])->name('client.order');
 Route::post('/commander', [OrderController::class, 'clientStore'])->name('client.order.store');
 
-// API for client form
+// API for client form (web)
 Route::get('/api/stores', [ClientController::class, 'getStoresApi']);
 Route::get('/api/stock',  [ClientController::class, 'getStockApi']);
+
+// ─── Mobile App API ───────────────────────────────────────────────────────
+Route::prefix('api')->name('api.')->group(function () {
+    // Auth (public)
+    Route::post('/auth/register', [MobileApiController::class, 'register'])->name('auth.register');
+    Route::post('/auth/login',    [MobileApiController::class, 'login'])->name('auth.login');
+
+    // Stores (public)
+    Route::get('/stores',        [MobileApiController::class, 'stores'])->name('stores.index');
+    Route::get('/stores/{id}',   [MobileApiController::class, 'storeDetail'])->name('stores.show');
+
+    // Orders (public — identified by phone)
+    Route::post('/orders',               [MobileApiController::class, 'createOrder'])->name('orders.store');
+    Route::get('/orders/client/{phone}', [MobileApiController::class, 'myOrders'])->name('orders.client');
+});
 
 // API for real-time alerts widget (authenticated store users)
 Route::middleware(\App\Http\Middleware\AuthenticateStore::class)
