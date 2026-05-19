@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use App\Models\AppSetting;
 use App\Models\MobileUser;
 use App\Models\Store;
 use App\Models\Stock;
@@ -73,6 +74,22 @@ class MobileApiController extends Controller
         return response()->json(['data' => $this->formatStore($store)]);
     }
 
+    private ?array $brandLogos = null;
+
+    private function brandLogoUrl(string $brand): ?string
+    {
+        if ($this->brandLogos === null) {
+            $raw = AppSetting::get('brands', []);
+            $this->brandLogos = [];
+            foreach ($raw as $b) {
+                $name = is_string($b) ? $b : ($b['name'] ?? '');
+                $logo = is_array($b) ? ($b['logo'] ?? null) : null;
+                $this->brandLogos[$name] = $logo ? url($logo) : null;
+            }
+        }
+        return $this->brandLogos[$brand] ?? null;
+    }
+
     private function formatStore(Store $store): array
     {
         return [
@@ -85,11 +102,12 @@ class MobileApiController extends Controller
             'longitude' => $store->longitude,
             'status'    => $store->status,
             'products'  => $store->stock->map(fn($s) => [
-                'id'        => $s->id,
-                'brand'     => $s->brand,
-                'weight'    => (string) $s->weight,
-                'quantity'  => $s->quantity,
-                'unitPrice' => (float) $s->unit_price,
+                'id'           => $s->id,
+                'brand'        => $s->brand,
+                'weight'       => (string) $s->weight,
+                'quantity'     => $s->quantity,
+                'unitPrice'    => (float) $s->unit_price,
+                'brandLogoUrl' => $this->brandLogoUrl($s->brand),
             ])->values(),
         ];
     }

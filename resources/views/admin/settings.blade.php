@@ -37,12 +37,32 @@
 
                 <div class="space-y-2">
                     @foreach($brands as $brand)
-                    <div class="flex items-center justify-between bg-gray-50 px-4 py-2.5 rounded-lg">
-                        <span class="font-medium text-gray-700">{{ $brand }}</span>
+                    <div class="flex items-center gap-3 bg-gray-50 px-3 py-2 rounded-lg">
+                        {{-- Logo preview --}}
+                        @if($brand['logo'])
+                            <img src="{{ asset($brand['logo']) }}" class="w-10 h-10 object-contain rounded bg-white border border-gray-200 p-0.5" alt="{{ $brand['name'] }}">
+                        @else
+                            <div class="w-10 h-10 bg-orange-100 rounded flex items-center justify-center shrink-0">
+                                <i class="fas fa-fire text-orange-400"></i>
+                            </div>
+                        @endif
+
+                        <span class="font-medium text-gray-700 flex-1">{{ $brand['name'] }}</span>
+
+                        {{-- Upload logo --}}
+                        <form action="{{ route('admin.settings.brand.logo', $brand['name']) }}" method="POST" enctype="multipart/form-data">
+                            @csrf
+                            <label class="cursor-pointer inline-flex items-center gap-1 text-xs text-blue-500 hover:text-blue-700 font-medium border border-blue-200 hover:border-blue-400 rounded px-2 py-1 transition-colors" title="Uploader un logo">
+                                <i class="fas fa-upload"></i> Logo
+                                <input type="file" name="logo" accept="image/*" class="hidden" onchange="this.form.submit()">
+                            </label>
+                        </form>
+
+                        {{-- Delete --}}
                         <form action="{{ route('admin.settings.brand.delete') }}" method="POST"
                               onsubmit="return confirm('Supprimer cette marque ?')">
                             @csrf @method('DELETE')
-                            <input type="hidden" name="brand" value="{{ $brand }}">
+                            <input type="hidden" name="brand" value="{{ $brand['name'] }}">
                             <button class="text-red-400 hover:text-red-600 text-sm"><i class="fas fa-times"></i></button>
                         </form>
                     </div>

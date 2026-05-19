@@ -163,19 +163,33 @@
                         </td>
                         <td class="table-cell">
                             @php $appUrl = route('livreur.app', $livreur->access_token); @endphp
-                            <div class="flex items-center gap-2">
-                                <input type="text" readonly value="{{ $appUrl }}"
-                                       class="text-xs border border-gray-200 rounded-lg px-2 py-1.5 w-32 text-gray-500 bg-gray-50 font-mono truncate">
-                                <button onclick="copyLink('{{ $appUrl }}')"
-                                        class="w-8 h-8 flex items-center justify-center rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition"
-                                        title="Copier le lien">
-                                    <i class="fas fa-copy text-xs"></i>
-                                </button>
-                                <a href="{{ $appUrl }}" target="_blank"
-                                   class="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-50 text-gray-500 hover:bg-gray-100 transition"
-                                   title="Ouvrir l'app">
-                                    <i class="fas fa-external-link-alt text-xs"></i>
-                                </a>
+                            <div class="space-y-1.5">
+                                {{-- Token Flutter --}}
+                                <div class="flex items-center gap-1.5">
+                                    <span class="text-xs text-gray-400 w-10 shrink-0">Token</span>
+                                    <code class="text-xs bg-gray-100 text-gray-700 font-mono px-2 py-0.5 rounded w-28 truncate block"
+                                          title="{{ $livreur->access_token }}">{{ $livreur->access_token }}</code>
+                                    <button onclick="copyText('{{ $livreur->access_token }}', this)"
+                                            class="w-7 h-7 flex items-center justify-center rounded-lg bg-orange-50 text-orange-600 hover:bg-orange-100 transition shrink-0"
+                                            title="Copier le token (app Flutter)">
+                                        <i class="fas fa-copy text-xs"></i>
+                                    </button>
+                                </div>
+                                {{-- Lien PWA --}}
+                                <div class="flex items-center gap-1.5">
+                                    <span class="text-xs text-gray-400 w-10 shrink-0">PWA</span>
+                                    <input type="text" readonly value="{{ $appUrl }}"
+                                           class="text-xs border border-gray-200 rounded-lg px-2 py-0.5 w-28 text-gray-500 bg-gray-50 font-mono truncate">
+                                    <button onclick="copyText('{{ $appUrl }}', this)"
+                                            class="w-7 h-7 flex items-center justify-center rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition shrink-0"
+                                            title="Copier le lien PWA">
+                                        <i class="fas fa-copy text-xs"></i>
+                                    </button>
+                                    <a href="{{ $appUrl }}" target="_blank"
+                                       class="w-7 h-7 flex items-center justify-center rounded-lg bg-gray-50 text-gray-500 hover:bg-gray-100 transition shrink-0">
+                                        <i class="fas fa-external-link-alt text-xs"></i>
+                                    </a>
+                                </div>
                             </div>
                         </td>
                         <td class="table-cell">
@@ -326,17 +340,11 @@
 
 @push('scripts')
 <script>
-function copyLink(url) {
-    navigator.clipboard.writeText(url).then(() => {
-        const btn = event.currentTarget;
+function copyText(text, btn) {
+    navigator.clipboard.writeText(text).then(() => {
+        const orig = btn.innerHTML;
         btn.innerHTML = '<i class="fas fa-check text-xs"></i>';
-        btn.classList.replace('bg-blue-50','bg-green-50');
-        btn.classList.replace('text-blue-600','text-green-600');
-        setTimeout(() => {
-            btn.innerHTML = '<i class="fas fa-copy text-xs"></i>';
-            btn.classList.replace('bg-green-50','bg-blue-50');
-            btn.classList.replace('text-green-600','text-blue-600');
-        }, 2000);
+        setTimeout(() => { btn.innerHTML = orig; }, 2000);
     });
 }
 </script>

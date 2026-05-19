@@ -94,6 +94,136 @@ class LivreurController extends Controller
         return back()->with('success', 'Livreur retiré de la commande.');
     }
 
+    // ── Flutter JSON API ───────────────────────────────────────────────────
+
+    public function apiData(string $token)
+    {
+        $livreur = Livreur::where('access_token', $token)->firstOrFail();
+
+        $active = $livreur->orders()
+            ->with('store')
+            ->whereIn('status', ['confirmed', 'en_route'])
+            ->latest()
+            ->get()
+            ->map(fn($o) => $this->formatOrderJson($o));
+
+        $history = $livreur->orders()
+            ->with('store')
+            ->whereIn('status', ['delivered', 'cancelled'])
+            ->latest()
+            ->limit(30)
+            ->get()
+            ->map(fn($o) => $this->formatOrderJson($o));
+
+        return response()->json([
+            'livreur' => [
+                'id'           => $livreur->id,
+                'name'         => $livreur->name,
+                'phone'        => $livreur->phone,
+                'is_available' => (bool) $livreur->is_available,
+            ],
+            'active'  => $active,
+            'history' => $history,
+        ]);
+    }
+
+    public function apiUpdatePosition(Request $request, string $token)
+    {
+        $livreur = Livreur::where('access_token', $token)->firstOrFail();
+        $request->validate([
+            'latitude'     => 'required|numeric|between:-90,90',
+            'longitude'    => 'required|numeric|between:-180,180',
+            'is_available' => 'sometimes|boolean',
+        ]);
+
+        $data = ['latitude' => $request->latitude, 'longitude' => $request->longitude];
+        if ($request->has('is_available')) {
+            $data['is_available'] = $request->boolean('is_available');
+        }
+        $livreur->update($data);
+
+        return response()->json(['success' => true, 'is_available' => (bool) $livreur->fresh()->is_available]);
+    }
+
+    public function apiUpdateStatus(Request $request, string $token, Order $order)
+    {
+        $livreur = Livreur::where('access_token', $token)->firstOrFail();
+        abort_if($order->livreur_id !== $livreur->id, 403);
+
+        $request->validate(['status' => 'required|in:en_route,delivered,cancelled']);
+
+        $oldStatus = $order->status;
+        $order->update(['status' => $request->status]);
+
+        if ($request->status === 'delivered' && $oldStatus !== 'delivered') {
+            $livreur->update(['is_available' => true]);
+
+            $store = $order->store;
+            $stock = $store?->stock()
+                ->where('brand', $order->brand)
+                ->where('weight', $order->weight)
+                ->first();
+
+            if ($stock && $stock->quantity >= $order->quantity) {
+                $stock->decrement('quantity', $order->quantity);
+            }
+
+            $client = null;
+            if ($order->client_phone && $store) {
+                $client = $store->clients()->firstOrCreate(
+                    ['phone' => $order->client_phone],
+                    ['name'  => $order->client_name]
+                );
+                $client->increment('total_orders');
+
+                $loyalty = $store->loyaltyProgram;
+                if ($loyalty && $loyalty->active) {
+                    $client->increment('loyalty_points', intval($order->quantity * $loyalty->points_per_unit));
+                }
+            }
+
+            if ($store) {
+                $store->sales()->create([
+                    'client_id'   => $client?->id,
+                    'order_id'    => $order->id,
+                    'client_name' => $order->client_name,
+                    'brand'       => $order->brand,
+                    'weight'      => $order->weight,
+                    'quantity'    => $order->quantity,
+                    'unit_price'  => $order->unit_price,
+                    'amount'      => $order->total_price,
+                    'currency'    => $order->currency,
+                    'sale_date'   => now()->toDateString(),
+                ]);
+            }
+        }
+
+        if ($request->status === 'cancelled') {
+            $livreur->update(['is_available' => true]);
+        }
+
+        return response()->json(['success' => true, 'order' => $this->formatOrderJson($order->fresh())]);
+    }
+
+    private function formatOrderJson(Order $order): array
+    {
+        return [
+            'id'              => $order->id,
+            'storeName'       => $order->store?->store_name ?? '',
+            'clientName'      => $order->client_name,
+            'clientPhone'     => $order->client_phone,
+            'clientAddress'   => $order->client_address,
+            'brand'           => $order->brand,
+            'weight'          => (string) $order->weight,
+            'quantity'        => $order->quantity,
+            'totalPrice'      => (float) $order->total_price,
+            'currency'        => $order->currency ?? 'XOF',
+            'status'          => $order->status,
+            'notes'           => $order->notes,
+            'createdAt'       => $order->created_at?->toISOString(),
+        ];
+    }
+
     // ── Livreur mobile app (public, token-based) ───────────────────────────
 
     public function mobileApp(string $token)

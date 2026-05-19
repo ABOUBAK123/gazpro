@@ -61,6 +61,11 @@ Route::prefix('api')->name('api.')->group(function () {
     // Orders (public — identified by phone)
     Route::post('/orders',               [MobileApiController::class, 'createOrder'])->name('orders.store');
     Route::get('/orders/client/{phone}', [MobileApiController::class, 'myOrders'])->name('orders.client');
+
+    // Livreur Flutter app API (token-based)
+    Route::get('/livreur/{token}',                            [LivreurController::class, 'apiData'])->name('livreur.api.data');
+    Route::patch('/livreur/{token}/position',                 [LivreurController::class, 'apiUpdatePosition'])->name('livreur.api.position');
+    Route::patch('/livreur/{token}/commandes/{order}/statut', [LivreurController::class, 'apiUpdateStatus'])->name('livreur.api.status');
 });
 
 // API for real-time alerts widget (authenticated store users)
@@ -97,8 +102,9 @@ Route::middleware(\App\Http\Middleware\AuthenticateAdmin::class)->prefix('admin'
 
     // Admin settings
     Route::get('/parametres',              [AdminSettingsController::class, 'index'])->name('settings');
-    Route::post('/parametres/brands',      [AdminSettingsController::class, 'addBrand'])->name('settings.brand.add');
-    Route::delete('/parametres/brands',    [AdminSettingsController::class, 'deleteBrand'])->name('settings.brand.delete');
+    Route::post('/parametres/brands',              [AdminSettingsController::class, 'addBrand'])->name('settings.brand.add');
+    Route::delete('/parametres/brands',            [AdminSettingsController::class, 'deleteBrand'])->name('settings.brand.delete');
+    Route::post('/parametres/brands/{brand}/logo', [AdminSettingsController::class, 'uploadBrandLogo'])->name('settings.brand.logo');
     Route::post('/parametres/weights',     [AdminSettingsController::class, 'addWeight'])->name('settings.weight.add');
     Route::delete('/parametres/weights',   [AdminSettingsController::class, 'deleteWeight'])->name('settings.weight.delete');
     Route::post('/parametres/terms',       [AdminSettingsController::class, 'saveTerms'])->name('settings.terms');
