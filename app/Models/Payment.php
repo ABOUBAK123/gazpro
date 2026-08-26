@@ -8,7 +8,7 @@ class Payment extends Model
 {
     protected $fillable = [
         'store_id', 'amount', 'currency', 'payment_method',
-        'reference', 'status', 'plan', 'expires_at',
+        'reference', 'status', 'plan', 'plan_id', 'expires_at',
     ];
 
     protected function casts(): array
@@ -21,5 +21,10 @@ class Payment extends Model
     public function store()
     {
         return $this->belongsTo(Store::class);
+    }
+
+    public function plan()
+    {
+        return $this->belongsTo(Plan::class);
     }
 }

@@ -130,17 +130,7 @@
         </div>
     </div>
 
-    {{-- Comptes demo --}}
-    <div class="mt-4 rounded-xl px-4 py-3 text-xs" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);">
-        <p class="font-semibold text-white/80 mb-1.5 flex items-center gap-1.5">
-            <i class="fas fa-circle-info text-blue-300 text-xs"></i>Comptes démo
-        </p>
-        <div class="space-y-1 text-blue-200/80">
-            <div class="flex justify-between"><span class="text-white/50">Admin</span><code>admin@gazmanager.com / admin123</code></div>
-            <div class="flex justify-between"><span class="text-white/50">Manager</span><code>manager@test.com / manager123</code></div>
-            <div class="flex justify-between"><span class="text-white/50">Caissier</span><code>employee@test.com / employee123</code></div>
-        </div>
-    </div>
+    @include('partials.contact-footer', ['footerDark' => true])
 
 </div>
 

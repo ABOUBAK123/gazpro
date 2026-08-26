@@ -38,8 +38,30 @@ class AdminSettingsController extends Controller
             'from_name'  => 'GazManager',
             'encryption' => 'tls',
         ]);
+        $contact = AppSetting::get('company_contact', [
+            'phone'    => '+225 01 42 00 46 09',
+            'whatsapp' => '+225 01 42 00 46 09',
+            'email'    => 'atssarl555@gmail.com',
+        ]);
 
-        return view('admin.settings', compact('brands', 'weights', 'terms', 'emailConfig', 'deliveryFee'));
+        return view('admin.settings', compact('brands', 'weights', 'terms', 'emailConfig', 'deliveryFee', 'contact'));
+    }
+
+    public function saveContact(Request $request)
+    {
+        $request->validate([
+            'contact_phone'    => 'required|string|max:30',
+            'contact_whatsapp' => 'required|string|max:30',
+            'contact_email'    => 'required|email|max:255',
+        ]);
+
+        AppSetting::set('company_contact', [
+            'phone'    => $request->contact_phone,
+            'whatsapp' => $request->contact_whatsapp,
+            'email'    => $request->contact_email,
+        ]);
+
+        return back()->with('success', 'Coordonnées mises à jour.');
     }
 
     public function addBrand(Request $request)

@@ -120,6 +120,9 @@
             </p>
         </div>
     </div>
+
+    @include('partials.contact-footer', ['footerDark' => true])
+
 </div>
 </body>
 </html>

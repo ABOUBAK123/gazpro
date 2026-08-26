@@ -211,13 +211,15 @@
     @foreach([
         ['route' => 'admin.accounts',     'icon' => 'fa-users-cog',    'color' => 'blue',   'label' => 'Comptes',   'sub' => 'Magasins & Employés'],
         ['route' => 'admin.currencies',   'icon' => 'fa-coins',        'color' => 'amber',  'label' => 'Devises',   'sub' => 'Multi-currencies'],
-        ['route' => 'admin.subscription', 'icon' => 'fa-credit-card',  'color' => 'purple', 'label' => 'Abonnement','sub' => 'Tarifs & Paiements'],
+        ['route' => 'admin.plans.index',  'icon' => 'fa-tags',         'color' => 'green',  'label' => 'Formules',  'sub' => 'Plans d\'abonnement'],
+        ['route' => 'admin.subscription', 'icon' => 'fa-credit-card',  'color' => 'purple', 'label' => 'Abonnement','sub' => 'Passerelle & Paiements'],
         ['route' => 'admin.settings',     'icon' => 'fa-cog',          'color' => 'slate',  'label' => 'Paramètres','sub' => 'Marques, Email...'],
     ] as $action)
     @php
         $colors = [
             'blue'   => 'bg-blue-50 hover:bg-blue-100 text-blue-600',
             'amber'  => 'bg-amber-50 hover:bg-amber-100 text-amber-600',
+            'green'  => 'bg-green-50 hover:bg-green-100 text-green-600',
             'purple' => 'bg-purple-50 hover:bg-purple-100 text-purple-600',
             'slate'  => 'bg-slate-50 hover:bg-slate-100 text-slate-600',
         ];

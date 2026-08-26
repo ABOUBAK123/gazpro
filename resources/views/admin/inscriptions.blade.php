@@ -74,6 +74,7 @@
                             <th class="pb-3 font-semibold text-gray-600">Contact</th>
                             <th class="pb-3 font-semibold text-gray-600">Abonnement</th>
                             <th class="pb-3 font-semibold text-gray-600">Inscrit le</th>
+                            <th class="pb-3 font-semibold text-gray-600">App mobile (QR)</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100">
@@ -88,9 +89,30 @@
                                     </span>
                                 </td>
                                 <td class="py-3 text-gray-500">{{ $store->created_at->format('d/m/Y') }}</td>
+                                <td class="py-3">
+                                    @if($store->qr_code_path)
+                                        @php $downloadUrl = route('app.download', $store->qr_token); @endphp
+                                        <div class="flex items-center gap-2">
+                                            <img src="{{ asset('storage/' . $store->qr_code_path) }}"
+                                                 alt="QR {{ $store->store_name }}" class="w-12 h-12 border border-gray-200 rounded-lg bg-white p-1">
+                                            <div class="flex flex-col gap-1">
+                                                <a href="{{ asset('storage/' . $store->qr_code_path) }}" download
+                                                   class="text-xs text-blue-600 hover:underline">
+                                                    <i class="fas fa-download"></i> Télécharger
+                                                </a>
+                                                <button type="button" onclick="navigator.clipboard.writeText('{{ $downloadUrl }}')"
+                                                        class="text-xs text-gray-500 hover:text-gray-700 text-left">
+                                                    <i class="fas fa-copy"></i> Copier le lien
+                                                </button>
+                                            </div>
+                                        </div>
+                                    @else
+                                        <span class="text-xs text-gray-400">—</span>
+                                    @endif
+                                </td>
                             </tr>
                         @empty
-                            <tr><td colspan="5" class="py-8 text-center text-gray-500">Aucun magasin actif</td></tr>
+                            <tr><td colspan="6" class="py-8 text-center text-gray-500">Aucun magasin actif</td></tr>
                         @endforelse
                     </tbody>
                 </table>

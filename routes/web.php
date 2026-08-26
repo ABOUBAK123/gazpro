@@ -15,14 +15,18 @@ use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\LoyaltyController;
 use App\Http\Controllers\LivreurController;
 use App\Http\Controllers\AdminLivreurController;
+use App\Http\Controllers\AdminPlanController;
+use App\Http\Controllers\AdminProfileController;
+use App\Http\Controllers\AppDownloadController;
+use App\Http\Controllers\LandingController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProfitController;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\MobileApiController;
 
-// Redirect root
-Route::get('/', fn() => redirect()->route('login'));
+// Landing page — public pricing (plans configured by admin)
+Route::get('/', [LandingController::class, 'index'])->name('landing');
 
 // CinetPay IPN webhook (public, no auth, no CSRF — exempted in bootstrap/app.php)
 Route::post('/abonnement/notify', [SubscriptionController::class, 'notify'])->name('subscription.notify');
@@ -43,6 +47,9 @@ Route::patch('/livreur/{token}/commandes/{order}/statut',  [LivreurController::c
 // Public client order form
 Route::get('/commander',  [OrderController::class, 'clientForm'])->name('client.order');
 Route::post('/commander', [OrderController::class, 'clientStore'])->name('client.order.store');
+
+// Public store app download page (linked from the store's QR code)
+Route::get('/app/{store:qr_token}', [AppDownloadController::class, 'show'])->name('app.download');
 
 // API for client form (web)
 Route::get('/api/stores', [ClientController::class, 'getStoresApi']);
@@ -86,6 +93,13 @@ Route::middleware(\App\Http\Middleware\AuthenticateAdmin::class)->prefix('admin'
     Route::put('/subscription',        [AdminController::class, 'updateSubscription'])->name('subscription.update');
     Route::post('/subscription/logos', [AdminController::class, 'uploadPaymentLogos'])->name('subscription.logos');
 
+    // Subscription plans
+    Route::get('/plans',                [AdminPlanController::class, 'index'])->name('plans.index');
+    Route::post('/plans',               [AdminPlanController::class, 'store'])->name('plans.store');
+    Route::put('/plans/{plan}',         [AdminPlanController::class, 'update'])->name('plans.update');
+    Route::patch('/plans/{plan}/toggle',[AdminPlanController::class, 'toggle'])->name('plans.toggle');
+    Route::delete('/plans/{plan}',      [AdminPlanController::class, 'destroy'])->name('plans.destroy');
+
     // Accounts management
     Route::get('/comptes',                     [AccountController::class, 'index'])->name('accounts');
     Route::put('/comptes/stores/{store}',      [AccountController::class, 'updateStore'])->name('accounts.store.update');
@@ -110,6 +124,12 @@ Route::middleware(\App\Http\Middleware\AuthenticateAdmin::class)->prefix('admin'
     Route::post('/parametres/terms',         [AdminSettingsController::class, 'saveTerms'])->name('settings.terms');
     Route::post('/parametres/email',         [AdminSettingsController::class, 'saveEmailConfig'])->name('settings.email');
     Route::post('/parametres/delivery-fee', [AdminSettingsController::class, 'saveDeliveryFee'])->name('settings.delivery_fee');
+    Route::post('/parametres/contact',      [AdminSettingsController::class, 'saveContact'])->name('settings.contact');
+
+    // Admin profile
+    Route::get('/profil',            [AdminProfileController::class, 'index'])->name('profile.index');
+    Route::get('/profil/parametres', [AdminProfileController::class, 'settings'])->name('profile.settings');
+    Route::put('/profil/parametres', [AdminProfileController::class, 'update'])->name('profile.update');
 });
 
 // Store (manager + staff) routes

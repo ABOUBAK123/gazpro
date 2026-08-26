@@ -5,15 +5,15 @@
 @section('content')
 <div class="pt-4 max-w-2xl">
     <div class="mb-4">
-        <a href="{{ route('profile.index') }}" class="text-blue-600 text-sm hover:underline">
+        <a href="{{ route('admin.profile.index') }}" class="text-blue-600 text-sm hover:underline">
             <i class="fas fa-arrow-left mr-1"></i> Retour au profil
         </a>
     </div>
 
     <div class="card">
         <h3 class="font-semibold text-gray-800 mb-5">Modifier mes informations</h3>
-        <form action="{{ route('profile.update') }}" method="POST" enctype="multipart/form-data"
-              x-data="{ preview: '{{ $user->avatar ? asset($user->avatar) : '' }}' }">
+        <form action="{{ route('admin.profile.update') }}" method="POST" enctype="multipart/form-data"
+              x-data="{ preview: '{{ $admin->avatar ? asset($admin->avatar) : '' }}' }">
             @csrf @method('PUT')
 
             {{-- Photo de profil --}}
@@ -23,9 +23,7 @@
                         <img :src="preview" class="w-full h-full object-cover">
                     </template>
                     <template x-if="!preview">
-                        <span class="text-blue-600 font-bold text-xl">
-                            {{ strtoupper(substr($isManager ? $user->owner_name : $user->name, 0, 1)) }}
-                        </span>
+                        <span class="text-blue-600 font-bold text-xl">{{ strtoupper(substr($admin->name, 0, 1)) }}</span>
                     </template>
                 </div>
                 <label class="cursor-pointer">
@@ -39,19 +37,16 @@
 
             <div class="space-y-4">
                 <div>
-                    <label class="form-label">{{ $isManager ? 'Nom du propriétaire' : 'Nom complet' }}</label>
-                    <input type="text" name="name" class="form-input"
-                           value="{{ old('name', $isManager ? $user->owner_name : $user->name) }}" required>
+                    <label class="form-label">Nom</label>
+                    <input type="text" name="name" class="form-input" value="{{ old('name', $admin->name) }}" required>
                 </div>
                 <div>
                     <label class="form-label">Email</label>
-                    <input type="email" name="email" class="form-input"
-                           value="{{ old('email', $user->email) }}" required>
+                    <input type="email" name="email" class="form-input" value="{{ old('email', $admin->email) }}" required>
                 </div>
                 <div>
                     <label class="form-label">Téléphone</label>
-                    <input type="text" name="phone" class="form-input"
-                           value="{{ old('phone', $user->phone) }}" placeholder="+225 00 00 00 00">
+                    <input type="text" name="phone" class="form-input" value="{{ old('phone', $admin->phone) }}" placeholder="+225 00 00 00 00">
                 </div>
                 <hr class="border-gray-100">
                 <div>
@@ -67,7 +62,7 @@
                 <button type="submit" class="btn btn-primary">
                     <i class="fas fa-save mr-1"></i> Enregistrer
                 </button>
-                <a href="{{ route('profile.index') }}" class="btn btn-secondary">Annuler</a>
+                <a href="{{ route('admin.profile.index') }}" class="btn btn-secondary">Annuler</a>
             </div>
         </form>
     </div>

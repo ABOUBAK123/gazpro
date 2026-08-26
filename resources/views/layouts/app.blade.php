@@ -100,6 +100,10 @@
                class="nav-item {{ request()->routeIs('admin.currencies*') ? 'active' : '' }}">
                 <i class="fas fa-coins"></i>Devises
             </a>
+            <a href="{{ route('admin.plans.index') }}"
+               class="nav-item {{ request()->routeIs('admin.plans*') ? 'active' : '' }}">
+                <i class="fas fa-tags"></i>Formules
+            </a>
             <a href="{{ route('admin.subscription') }}"
                class="nav-item {{ request()->routeIs('admin.subscription*') ? 'active' : '' }}">
                 <i class="fas fa-credit-card"></i>Abonnement
@@ -111,6 +115,10 @@
             <a href="{{ route('admin.settings') }}"
                class="nav-item {{ request()->routeIs('admin.settings*') ? 'active' : '' }}">
                 <i class="fas fa-cog"></i>Paramètres
+            </a>
+            <a href="{{ route('admin.profile.index') }}"
+               class="nav-item {{ request()->routeIs('admin.profile*') ? 'active' : '' }}">
+                <i class="fas fa-user-circle"></i>Profil
             </a>
         </div>
 
@@ -185,10 +193,15 @@
             $authName = $authUser?->owner_name ?? $authUser?->name ?? $authUser?->store_name ?? 'Utilisateur';
         @endphp
         <div class="flex items-center gap-2 ml-auto shrink-0 pl-2 border-l border-white/20">
-            <div class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold text-white"
-                 style="background:rgba(255,255,255,0.2);">
-                {{ strtoupper(substr($authName, 0, 1)) }}
-            </div>
+            <a href="{{ auth('admin')->check() ? route('admin.profile.index') : route('profile.index') }}"
+               class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold text-white overflow-hidden shrink-0"
+               style="background:rgba(255,255,255,0.2);" title="Mon profil">
+                @if($authUser?->avatar)
+                    <img src="{{ asset($authUser->avatar) }}" class="w-full h-full object-cover">
+                @else
+                    {{ strtoupper(substr($authName, 0, 1)) }}
+                @endif
+            </a>
             <div class="hidden md:block leading-tight">
                 <div class="text-white text-xs font-semibold">{{ $authName }}</div>
                 <div class="text-xs" style="color:rgba(255,255,255,0.55);">{{ $authRole }}</div>

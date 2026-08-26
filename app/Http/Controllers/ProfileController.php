@@ -37,6 +37,7 @@ class ProfileController extends Controller
             'name'     => 'required|string|max:255',
             'phone'    => 'nullable|string|max:50',
             'password' => 'nullable|string|min:6|confirmed',
+            'avatar'   => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ];
 
         if ($isManager) {
@@ -58,6 +59,15 @@ class ProfileController extends Controller
 
         if ($request->filled('password')) {
             $data['password'] = Hash::make($request->password);
+        }
+
+        if ($request->hasFile('avatar')) {
+            if ($user->avatar) {
+                @unlink(public_path($user->avatar));
+            }
+            $filename = 'avatar_' . $user->id . '_' . time() . '.' . $request->file('avatar')->getClientOriginalExtension();
+            $request->file('avatar')->move(public_path('avatars'), $filename);
+            $data['avatar'] = 'avatars/' . $filename;
         }
 
         $user->update($data);

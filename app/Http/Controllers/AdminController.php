@@ -4,11 +4,14 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 use App\Models\Store;
 use App\Models\GlobalCurrency;
 use App\Models\SubscriptionSetting;
 use App\Models\Payment;
+use App\Models\Plan;
 use App\Models\AppSetting;
+use App\Services\StoreQrService;
 
 class AdminController extends Controller
 {
@@ -37,9 +40,28 @@ class AdminController extends Controller
         return view('admin.inscriptions', compact('pending', 'active', 'rejected'));
     }
 
-    public function approveStore(Store $store)
+    public function approveStore(Store $store, StoreQrService $qrService)
     {
-        $store->update(['status' => 'active']);
+        if (!$store->qr_token) {
+            $store->qr_token = (string) Str::uuid();
+        }
+        $store->status = 'active';
+
+        // First-time approval: grant the free trial plan automatically so the
+        // store can start using the platform right away without paying.
+        if (!$store->plan_id) {
+            $trial = Plan::where('slug', 'essai-gratuit')->where('is_active', true)->first();
+            if ($trial) {
+                $store->plan_id             = $trial->id;
+                $store->subscription_status = 'active';
+                $store->subscription_expiry = now()->addDays($trial->duration_days);
+            }
+        }
+
+        $store->save();
+
+        $qrService->generate($store);
+
         return back()->with('success', "Le magasin \"{$store->store_name}\" a été approuvé.");
     }
 
@@ -108,20 +130,6 @@ class AdminController extends Controller
 
     public function updateSubscription(Request $request)
     {
-        $request->validate([
-            'monthly_price' => 'required|numeric|min:0',
-            'yearly_price'  => 'required|numeric|min:0',
-            'currency'      => 'required|string|max:10',
-        ]);
-
-        $settings = SubscriptionSetting::current();
-        $settings->update([
-            'monthly_price'    => $request->monthly_price,
-            'yearly_price'     => $request->yearly_price,
-            'currency'         => $request->currency,
-            'mobile_providers' => $request->mobile_providers ? explode(',', $request->mobile_providers) : [],
-        ]);
-
         // CinetPay gateway keys
         if ($request->filled('cinetpay_api_key')) {
             AppSetting::set('cinetpay_api_key', $request->cinetpay_api_key);

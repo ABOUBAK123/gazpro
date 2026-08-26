@@ -208,6 +208,8 @@
                     @endforeach
                 </div>
             </div>
+
+            @include('partials.contact-footer', ['footerDark' => false])
         </div>
 
         {{-- ═══ STEP 2 — Magasin ═══ --}}

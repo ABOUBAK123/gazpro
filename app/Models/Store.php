@@ -10,9 +10,10 @@ class Store extends Authenticatable
     use Notifiable;
 
     protected $fillable = [
-        'store_name', 'owner_name', 'email', 'phone', 'password',
+        'store_name', 'owner_name', 'avatar', 'email', 'phone', 'password',
         'address', 'latitude', 'longitude', 'status',
         'subscription_status', 'subscription_expiry',
+        'plan_id', 'qr_token', 'qr_code_path', 'qr_generated_at',
     ];
 
     protected $hidden = ['password', 'remember_token'];
@@ -22,7 +23,13 @@ class Store extends Authenticatable
         return [
             'password' => 'hashed',
             'subscription_expiry' => 'datetime',
+            'qr_generated_at' => 'datetime',
         ];
+    }
+
+    public function plan()
+    {
+        return $this->belongsTo(Plan::class);
     }
 
     public function staff()

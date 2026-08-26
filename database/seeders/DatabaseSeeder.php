@@ -40,6 +40,9 @@ class DatabaseSeeder extends Seeder
             'mobile_providers' => ['Orange Money', 'Moov Money'],
         ]);
 
+        // Subscription plans
+        $this->call(PlanSeeder::class);
+
         // Demo store
         $store = Store::create([
             'store_name'          => 'Magasin Total Demo',

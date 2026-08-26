@@ -19,6 +19,10 @@
                 class="px-5 py-3 text-sm font-medium rounded-t-lg transition-colors">
             <i class="fas fa-envelope mr-2"></i>Config. Email
         </button>
+        <button @click="tab='contact'" :class="tab==='contact' ? 'border-b-2 border-blue-600 text-blue-600 bg-blue-50' : 'text-gray-500 hover:text-gray-700'"
+                class="px-5 py-3 text-sm font-medium rounded-t-lg transition-colors">
+            <i class="fas fa-address-card mr-2"></i>Contact (pied de page)
+        </button>
     </div>
 
     {{-- Brands & Weights --}}
@@ -193,6 +197,39 @@
                 <div class="mt-6">
                     <button type="submit" class="btn btn-primary">
                         <i class="fas fa-save mr-1"></i> Sauvegarder la configuration
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {{-- Contact --}}
+    <div x-show="tab==='contact'" x-cloak>
+        <div class="card max-w-2xl">
+            <h3 class="font-semibold text-gray-800 mb-1"><i class="fas fa-address-card text-purple-500 mr-2"></i>Coordonnées de l'entreprise</h3>
+            <p class="text-sm text-gray-500 mb-5">Affichées en pied de page des pages publiques (accueil, connexion, inscription, commande client, téléchargement de l'app).</p>
+            <form action="{{ route('admin.settings.contact') }}" method="POST">
+                @csrf
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="form-label">Téléphone</label>
+                        <input type="text" name="contact_phone" value="{{ $contact['phone'] ?? '' }}"
+                               placeholder="+225 01 42 00 46 09" class="form-input" required>
+                    </div>
+                    <div>
+                        <label class="form-label">Numéro WhatsApp</label>
+                        <input type="text" name="contact_whatsapp" value="{{ $contact['whatsapp'] ?? '' }}"
+                               placeholder="+225 01 42 00 46 09" class="form-input" required>
+                    </div>
+                    <div class="sm:col-span-2">
+                        <label class="form-label">Email</label>
+                        <input type="email" name="contact_email" value="{{ $contact['email'] ?? '' }}"
+                               placeholder="contact@entreprise.com" class="form-input" required>
+                    </div>
+                </div>
+                <div class="mt-6">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save mr-1"></i> Enregistrer les coordonnées
                     </button>
                 </div>
             </form>

@@ -6,7 +6,7 @@
     $isActive  = $store->hasActiveSubscription();
     $expiry    = $store->subscription_expiry;
     $daysLeft  = $expiry ? now()->diffInDays($expiry, false) : null;
-    $planLabel = fn($p) => $p === 'monthly' ? 'Mensuel' : 'Annuel';
+    $planLabel = fn($payment) => $payment->plan_id && $payment->plan ? $payment->plan->name : ucfirst($payment->plan);
     $methodLabel = function(string $m): string {
         return match(true) {
             str_contains($m, 'orange')  => 'Orange Money',
@@ -66,60 +66,37 @@
     </div>
 
     {{-- ── Choix du plan ────────────────────────────────────────── --}}
-    <div x-data="{ plan: 'monthly' }">
+    <div x-data="{ planId: {{ $plans->first()->id ?? 'null' }}, plans: {{ $plans->keyBy('id')->toJson() }} }">
         <h3 class="font-semibold text-gray-800 mb-4">
             {{ $isActive ? 'Renouveler / Prolonger' : 'Choisir un plan' }}
         </h3>
 
+        @if($plans->isEmpty())
+        <div class="card mb-6 text-sm text-gray-500">
+            Aucune formule d'abonnement n'est disponible pour le moment. Contactez l'administrateur.
+        </div>
+        @else
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-
-            {{-- Plan mensuel --}}
-            <div @click="plan='monthly'"
-                 :class="plan==='monthly' ? 'ring-2 ring-blue-600 border-blue-200 bg-blue-50' : 'border-gray-200 hover:border-blue-300 cursor-pointer'"
+            @foreach($plans as $p)
+            <div @click="planId={{ $p->id }}"
+                 :class="planId==={{ $p->id }} ? 'ring-2 ring-blue-600 border-blue-200 bg-blue-50' : 'border-gray-200 hover:border-blue-300 cursor-pointer'"
                  class="border-2 rounded-2xl p-5 transition-all">
                 <div class="flex items-center justify-between mb-3">
-                    <span class="font-semibold text-gray-800">Plan Mensuel</span>
-                    <div :class="plan==='monthly' ? 'bg-blue-600' : 'bg-gray-200'"
+                    <span class="font-semibold text-gray-800">Plan {{ $p->name }}</span>
+                    <div :class="planId==={{ $p->id }} ? 'bg-blue-600' : 'bg-gray-200'"
                          class="w-5 h-5 rounded-full flex items-center justify-center transition-colors">
-                        <i class="fas fa-check text-white text-xs" x-show="plan==='monthly'"></i>
+                        <i class="fas fa-check text-white text-xs" x-show="planId==={{ $p->id }}"></i>
                     </div>
                 </div>
                 <div class="text-3xl font-bold text-gray-900 mb-1">
-                    {{ number_format($settings->monthly_price, 0, ',', ' ') }}
-                    <span class="text-base font-normal text-gray-500">{{ $settings->currency }}/mois</span>
+                    {{ number_format($p->price, 0, ',', ' ') }}
+                    <span class="text-base font-normal text-gray-500">{{ $p->currency }}</span>
                 </div>
-                <p class="text-sm text-gray-500">Accès complet · Renouvelable chaque mois</p>
+                <p class="text-sm text-gray-500">Accès complet · {{ $p->duration_days }} jours</p>
             </div>
-
-            {{-- Plan annuel --}}
-            <div @click="plan='yearly'"
-                 :class="plan==='yearly' ? 'ring-2 ring-blue-600 border-blue-200 bg-blue-50' : 'border-gray-200 hover:border-blue-300 cursor-pointer'"
-                 class="border-2 rounded-2xl p-5 transition-all relative overflow-hidden">
-                @php $saving = ($settings->monthly_price * 12) - $settings->yearly_price; @endphp
-                @if($saving > 0)
-                <div class="absolute top-3 right-3 bg-green-500 text-white text-xs font-bold rounded-full px-2 py-0.5">
-                    -{{ round($saving / ($settings->monthly_price * 12) * 100) }}%
-                </div>
-                @endif
-                <div class="flex items-center justify-between mb-3">
-                    <span class="font-semibold text-gray-800">Plan Annuel</span>
-                    <div :class="plan==='yearly' ? 'bg-blue-600' : 'bg-gray-200'"
-                         class="w-5 h-5 rounded-full flex items-center justify-center transition-colors">
-                        <i class="fas fa-check text-white text-xs" x-show="plan==='yearly'"></i>
-                    </div>
-                </div>
-                <div class="text-3xl font-bold text-gray-900 mb-1">
-                    {{ number_format($settings->yearly_price, 0, ',', ' ') }}
-                    <span class="text-base font-normal text-gray-500">{{ $settings->currency }}/an</span>
-                </div>
-                <p class="text-sm text-gray-500">
-                    Accès complet · 12 mois
-                    @if($saving > 0)
-                    · <span class="text-green-600 font-medium">Économie {{ number_format($saving, 0, ',', ' ') }} {{ $settings->currency }}</span>
-                    @endif
-                </p>
-            </div>
+            @endforeach
         </div>
+        @endif
 
         {{-- Méthodes de paiement (dynamiques depuis les settings admin) --}}
         @php
@@ -160,15 +137,12 @@
         {{-- Bouton payer --}}
         <form action="{{ route('subscription.initiate') }}" method="POST">
             @csrf
-            <input type="hidden" name="plan" :value="plan">
-            <button type="submit"
-                    class="btn btn-primary w-full sm:w-auto px-8 py-3 text-base">
+            <input type="hidden" name="plan_id" :value="planId">
+            <button type="submit" :disabled="!planId"
+                    class="btn btn-primary w-full sm:w-auto px-8 py-3 text-base disabled:opacity-50">
                 <i class="fas fa-lock mr-1"></i>
                 Payer maintenant —
-                <span x-text="plan === 'monthly'
-                    ? '{{ number_format($settings->monthly_price, 0, ',', ' ') }} {{ $settings->currency }}/mois'
-                    : '{{ number_format($settings->yearly_price, 0, ',', ' ') }} {{ $settings->currency }}/an'">
-                </span>
+                <span x-text="planId && plans[planId] ? new Intl.NumberFormat('fr-FR').format(plans[planId].price) + ' ' + plans[planId].currency : ''"></span>
             </button>
         </form>
 
@@ -197,7 +171,7 @@
                     @foreach($payments as $p)
                     <tr>
                         <td class="py-2.5 text-gray-600">{{ $p->created_at->format('d/m/Y H:i') }}</td>
-                        <td class="py-2.5 text-gray-800 font-medium">{{ $planLabel($p->plan) }}</td>
+                        <td class="py-2.5 text-gray-800 font-medium">{{ $planLabel($p) }}</td>
                         <td class="py-2.5 text-gray-600">{{ $methodLabel($p->payment_method) }}</td>
                         <td class="py-2.5 text-right font-semibold text-gray-800">
                             {{ number_format($p->amount, 0, ',', ' ') }} {{ $p->currency }}

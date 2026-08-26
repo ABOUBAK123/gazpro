@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use App\Models\Store;
 use App\Models\Payment;
-use App\Models\SubscriptionSetting;
+use App\Models\Plan;
 use App\Models\AppSetting;
 
 class SubscriptionController extends Controller
@@ -24,20 +24,19 @@ class SubscriptionController extends Controller
     public function index()
     {
         $store    = $this->currentStore();
-        $settings = SubscriptionSetting::current();
+        $plans    = Plan::active()->get();
         $payments = Payment::where('store_id', $store->id)->latest()->limit(10)->get();
 
-        return view('store.subscription', compact('store', 'settings', 'payments'));
+        return view('store.subscription', compact('store', 'plans', 'payments'));
     }
 
     public function initiate(Request $request)
     {
-        $request->validate(['plan' => 'required|in:monthly,yearly']);
+        $request->validate(['plan_id' => 'required|exists:plans,id']);
 
-        $store    = $this->currentStore();
-        $settings = SubscriptionSetting::current();
-        $plan     = $request->plan;
-        $amount   = $plan === 'monthly' ? $settings->monthly_price : $settings->yearly_price;
+        $store  = $this->currentStore();
+        $plan   = Plan::findOrFail($request->plan_id);
+        $amount = $plan->price;
 
         $apiKey = AppSetting::get('cinetpay_api_key');
         $siteId = AppSetting::get('cinetpay_site_id');
@@ -51,11 +50,12 @@ class SubscriptionController extends Controller
         $payment = Payment::create([
             'store_id'       => $store->id,
             'amount'         => $amount,
-            'currency'       => $settings->currency,
+            'currency'       => $plan->currency,
             'payment_method' => 'cinetpay',
             'reference'      => $transactionId,
             'status'         => 'pending',
-            'plan'           => $plan,
+            'plan'           => $plan->slug,
+            'plan_id'        => $plan->id,
         ]);
 
         $response = Http::timeout(15)->post('https://api-checkout.cinetpay.com/v2/payment', [
@@ -63,8 +63,8 @@ class SubscriptionController extends Controller
             'site_id'                => $siteId,
             'transaction_id'         => $transactionId,
             'amount'                 => (int) $amount,
-            'currency'               => $settings->currency,
-            'description'            => 'Abonnement ' . ($plan === 'monthly' ? 'mensuel' : 'annuel') . ' GazManager',
+            'currency'               => $plan->currency,
+            'description'            => 'Abonnement ' . $plan->name . ' GazManager',
             'customer_id'            => (string) $store->id,
             'customer_name'          => $store->store_name,
             'customer_surname'       => $store->owner_name,
@@ -134,18 +134,19 @@ class SubscriptionController extends Controller
                 'payment_method' => $method,
             ]);
 
-            $expiry = $payment->plan === 'monthly' ? now()->addMonth() : now()->addYear();
+            $durationDays = $payment->plan_id ? $payment->plan->duration_days : 30;
+            $expiry = now()->addDays($durationDays);
 
             // Extend if already active
             $store = $payment->store;
             if ($store->hasActiveSubscription()) {
-                $expiry = $store->subscription_expiry
-                    ->addMonth($payment->plan === 'monthly' ? 1 : 12);
+                $expiry = $store->subscription_expiry->addDays($durationDays);
             }
 
             $store->update([
                 'subscription_status' => 'active',
                 'subscription_expiry' => $expiry,
+                'plan_id'             => $payment->plan_id,
             ]);
         } else {
             $payment->update(['status' => 'failed']);

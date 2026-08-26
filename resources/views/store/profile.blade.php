@@ -9,9 +9,13 @@
     <div class="lg:col-span-2 space-y-6">
         <div class="card">
             <div class="flex items-start gap-5">
-                <div class="w-20 h-20 bg-blue-600 rounded-full flex items-center justify-center text-white text-3xl font-bold shrink-0">
+                <div class="w-20 h-20 bg-blue-600 rounded-full flex items-center justify-center text-white text-3xl font-bold shrink-0 overflow-hidden">
                     @php $n = $isManager ? ($user->owner_name ?? $user->store_name) : $user->name; @endphp
-                    {{ strtoupper(substr($n, 0, 1)) }}
+                    @if($user->avatar)
+                        <img src="{{ asset($user->avatar) }}" class="w-full h-full object-cover">
+                    @else
+                        {{ strtoupper(substr($n, 0, 1)) }}
+                    @endif
                 </div>
                 <div class="flex-1">
                     <h2 class="text-xl font-bold text-gray-800">{{ $n }}</h2>

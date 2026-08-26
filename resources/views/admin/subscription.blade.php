@@ -79,53 +79,14 @@
 
 <div class="pt-4 max-w-3xl space-y-6" x-data="subscriptionAdmin()">
 
-    {{-- ── 1. Tarifs ─────────────────────────────────────────────── --}}
-    <div class="card">
-        <h3 class="font-semibold text-gray-800 mb-5 flex items-center gap-2">
-            <i class="fas fa-tags text-blue-500"></i> Tarifs abonnement
-        </h3>
-        <form action="{{ route('admin.subscription.update') }}" method="POST" class="space-y-4">
-            @csrf @method('PUT')
-            <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <label class="form-label">Prix mensuel</label>
-                    <input type="number" name="monthly_price" value="{{ $settings->monthly_price }}"
-                           min="0" step="100" class="form-input" required>
-                </div>
-                <div>
-                    <label class="form-label">Prix annuel</label>
-                    <input type="number" name="yearly_price" value="{{ $settings->yearly_price }}"
-                           min="0" step="100" class="form-input" required>
-                </div>
-            </div>
-            <div>
-                <label class="form-label">Devise</label>
-                <select name="currency" class="form-input">
-                    <option value="XOF" {{ $settings->currency === 'XOF' ? 'selected' : '' }}>XOF — Franc CFA</option>
-                    <option value="EUR" {{ $settings->currency === 'EUR' ? 'selected' : '' }}>EUR — Euro</option>
-                    <option value="USD" {{ $settings->currency === 'USD' ? 'selected' : '' }}>USD — Dollar</option>
-                </select>
-            </div>
-            <div class="bg-blue-50 rounded-xl p-4 flex gap-6 text-sm">
-                <div>
-                    <div class="text-gray-500 text-xs mb-0.5">Mensuel</div>
-                    <div class="font-bold text-gray-800">{{ number_format($settings->monthly_price,0,',',' ') }} {{ $settings->currency }}</div>
-                </div>
-                <div class="w-px bg-blue-200"></div>
-                <div>
-                    <div class="text-gray-500 text-xs mb-0.5">Annuel</div>
-                    <div class="font-bold text-gray-800">{{ number_format($settings->yearly_price,0,',',' ') }} {{ $settings->currency }}</div>
-                </div>
-                <div class="w-px bg-blue-200"></div>
-                <div>
-                    <div class="text-gray-500 text-xs mb-0.5">Économie annuel</div>
-                    <div class="font-bold text-green-600">-{{ number_format(($settings->monthly_price*12)-$settings->yearly_price,0,',',' ') }} {{ $settings->currency }}</div>
-                </div>
-            </div>
-            <button type="submit" class="btn btn-primary">
-                <i class="fas fa-save"></i> Enregistrer les tarifs
-            </button>
-        </form>
+    <div class="card bg-blue-50 border border-blue-100 flex items-center gap-3">
+        <i class="fas fa-tags text-blue-500 text-lg"></i>
+        <div class="flex-1 text-sm text-gray-700">
+            La gestion des formules d'abonnement (prix, durée) se fait maintenant depuis une page dédiée.
+        </div>
+        <a href="{{ route('admin.plans.index') }}" class="btn btn-primary">
+            <i class="fas fa-arrow-right"></i> Gérer les formules
+        </a>
     </div>
 
     {{-- ── 2. CinetPay gateway ────────────────────────────────────── --}}
@@ -148,9 +109,6 @@
         <form action="{{ route('admin.subscription.update') }}" method="POST" class="space-y-4">
             @csrf @method('PUT')
             {{-- hidden required fields --}}
-            <input type="hidden" name="monthly_price" value="{{ $settings->monthly_price }}">
-            <input type="hidden" name="yearly_price"  value="{{ $settings->yearly_price }}">
-            <input type="hidden" name="currency"      value="{{ $settings->currency }}">
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
@@ -207,9 +165,6 @@
 
         <form action="{{ route('admin.subscription.update') }}" method="POST" class="space-y-4">
             @csrf @method('PUT')
-            <input type="hidden" name="monthly_price" value="{{ $settings->monthly_price }}">
-            <input type="hidden" name="yearly_price"  value="{{ $settings->yearly_price }}">
-            <input type="hidden" name="currency"      value="{{ $settings->currency }}">
 
             @foreach($providers as $key => $prov)
             @php
