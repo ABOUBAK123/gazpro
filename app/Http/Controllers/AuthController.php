@@ -101,6 +101,7 @@ class AuthController extends Controller
             'email'      => 'required|email|unique:stores,email',
             'phone'      => 'required|string|max:20',
             'password'   => 'required|string|min:6|confirmed',
+            'terms'      => 'accepted',
         ], [
             'store_name.required' => 'Le nom du magasin est requis.',
             'owner_name.required' => 'Le nom du propriétaire est requis.',
@@ -110,6 +111,7 @@ class AuthController extends Controller
             'password.required'   => 'Le mot de passe est requis.',
             'password.min'        => 'Le mot de passe doit avoir au moins 6 caractères.',
             'password.confirmed'  => 'Les mots de passe ne correspondent pas.',
+            'terms.accepted'      => 'Vous devez accepter les conditions d\'utilisation.',
         ]);
 
         $commissionnaire = $request->filled('code_parrain')
@@ -142,6 +144,7 @@ class AuthController extends Controller
             'email'    => 'required|email|unique:commissionnaires,email',
             'phone'    => 'required|string|max:20',
             'password' => 'required|string|min:6|confirmed',
+            'terms'    => 'accepted',
         ], [
             'name.required'      => 'Le nom est requis.',
             'email.required'     => 'L\'email est requis.',
@@ -150,6 +153,7 @@ class AuthController extends Controller
             'password.required'  => 'Le mot de passe est requis.',
             'password.min'       => 'Le mot de passe doit avoir au moins 6 caractères.',
             'password.confirmed' => 'Les mots de passe ne correspondent pas.',
+            'terms.accepted'     => 'Vous devez accepter les conditions d\'utilisation.',
         ]);
 
         do {

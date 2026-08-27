@@ -30,6 +30,7 @@ use App\Http\Controllers\MobileApiController;
 
 // Landing page — public pricing (plans configured by admin)
 Route::get('/', [LandingController::class, 'index'])->name('landing');
+Route::get('/conditions-utilisation', [LandingController::class, 'terms'])->name('terms');
 
 // CinetPay IPN webhook (public, no auth, no CSRF — exempted in bootstrap/app.php)
 Route::post('/abonnement/notify', [SubscriptionController::class, 'notify'])->name('subscription.notify');

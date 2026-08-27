@@ -90,6 +90,19 @@
                     <span>Votre demande sera examinée par l'administrateur. Un code de parrainage unique vous sera attribué après validation.</span>
                 </div>
 
+                <div class="flex items-start gap-2.5">
+                    <input type="checkbox" name="terms" id="terms" value="1" required
+                           class="mt-0.5 w-4 h-4 rounded border-gray-300 text-blue-600 cursor-pointer shrink-0">
+                    <label for="terms" class="text-sm text-gray-600 cursor-pointer">
+                        J'accepte les <a href="{{ route('terms') }}" target="_blank" class="text-blue-600 font-semibold hover:text-blue-800 underline">conditions d'utilisation</a> de l'application <span class="text-red-400">*</span>
+                    </label>
+                </div>
+                @error('terms')
+                    <p class="text-red-500 text-xs -mt-2 flex items-center gap-1">
+                        <i class="fas fa-circle-exclamation"></i>{{ $message }}
+                    </p>
+                @enderror
+
                 <button type="submit"
                         class="w-full text-white font-bold py-3.5 rounded-xl text-sm transition-all duration-200 shadow-lg"
                         style="background:linear-gradient(135deg,#2563eb,#1d4ed8);"
