@@ -62,7 +62,11 @@
     <div class="flex items-center h-16 px-4 gap-1 max-w-screen-2xl mx-auto">
 
         {{-- Logo --}}
-        <a href="{{ auth('admin')->check() ? route('admin.dashboard') : route('store.dashboard') }}"
+        @php
+            $logoRoute = auth('admin')->check() ? 'admin.dashboard'
+                : (auth('commissionnaire')->check() ? 'commissionnaire.dashboard' : 'store.dashboard');
+        @endphp
+        <a href="{{ route($logoRoute) }}"
            class="flex items-center gap-2.5 mr-3 shrink-0">
             <div class="w-8 h-8 rounded-lg flex items-center justify-center shadow"
                  style="background:linear-gradient(135deg,#fbbf24,#f59e0b);">
@@ -112,6 +116,17 @@
                class="nav-item {{ request()->routeIs('admin.livreurs.*') ? 'active' : '' }}">
                 <i class="fas fa-motorcycle"></i>Livreurs
             </a>
+            <a href="{{ route('admin.commissionnaires') }}"
+               class="nav-item {{ request()->routeIs('admin.commissionnaires*') || request()->routeIs('admin.commissions') ? 'active' : '' }}">
+                @php $pendingComm = \App\Models\Commissionnaire::where('status','pending')->count(); @endphp
+                <i class="fas fa-handshake"></i>
+                <span class="flex items-center gap-1">
+                    Commissionnaires
+                    @if($pendingComm > 0)
+                        <span class="bg-yellow-400 text-yellow-900 text-xs rounded-full px-1.5 leading-none font-bold">{{ $pendingComm }}</span>
+                    @endif
+                </span>
+            </a>
             <a href="{{ route('admin.settings') }}"
                class="nav-item {{ request()->routeIs('admin.settings*') ? 'active' : '' }}">
                 <i class="fas fa-cog"></i>Paramètres
@@ -123,7 +138,7 @@
         </div>
 
         {{-- STORE / STAFF NAV --}}
-        @else
+        @elseif(auth('store')->check() || auth('staff')->check())
         <div class="flex items-center gap-0.5 flex-1 overflow-x-auto">
             <a href="{{ route('store.dashboard') }}"
                class="nav-item {{ request()->routeIs('store.dashboard') ? 'active' : '' }}">
@@ -183,17 +198,38 @@
                 <i class="fas fa-user-circle"></i>Profil
             </a>
         </div>
+
+        {{-- COMMISSIONNAIRE NAV --}}
+        @elseif(auth('commissionnaire')->check())
+        <div class="flex items-center gap-0.5 flex-1 overflow-x-auto">
+            <a href="{{ route('commissionnaire.dashboard') }}"
+               class="nav-item {{ request()->routeIs('commissionnaire.dashboard') ? 'active' : '' }}">
+                <i class="fas fa-chart-bar"></i>Tableau
+            </a>
+            <a href="{{ route('commissionnaire.stores') }}"
+               class="nav-item {{ request()->routeIs('commissionnaire.stores') ? 'active' : '' }}">
+                <i class="fas fa-store"></i>Mes filleuls
+            </a>
+            <a href="{{ route('commissionnaire.transactions') }}"
+               class="nav-item {{ request()->routeIs('commissionnaire.transactions') ? 'active' : '' }}">
+                <i class="fas fa-receipt"></i>Transactions
+            </a>
+        </div>
         @endif
 
         {{-- Droite : user + logout --}}
         @php
-            $authUser = auth('admin')->user() ?? auth('store')->user() ?? auth('staff')->user();
+            $authUser = auth('admin')->user() ?? auth('store')->user() ?? auth('staff')->user() ?? auth('commissionnaire')->user();
             $authRole = auth('admin')->check() ? 'Administrateur'
-                : (auth('store')->check() ? 'Manager' : ucfirst(auth('staff')->user()?->role ?? ''));
+                : (auth('store')->check() ? 'Manager'
+                : (auth('commissionnaire')->check() ? 'Commissionnaire'
+                : ucfirst(auth('staff')->user()?->role ?? '')));
             $authName = $authUser?->owner_name ?? $authUser?->name ?? $authUser?->store_name ?? 'Utilisateur';
+            $profileRoute = auth('admin')->check() ? 'admin.profile.index'
+                : (auth('commissionnaire')->check() ? 'commissionnaire.dashboard' : 'profile.index');
         @endphp
         <div class="flex items-center gap-2 ml-auto shrink-0 pl-2 border-l border-white/20">
-            <a href="{{ auth('admin')->check() ? route('admin.profile.index') : route('profile.index') }}"
+            <a href="{{ route($profileRoute) }}"
                class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold text-white overflow-hidden shrink-0"
                style="background:rgba(255,255,255,0.2);" title="Mon profil">
                 @if($authUser?->avatar)

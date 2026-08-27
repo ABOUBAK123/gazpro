@@ -127,6 +127,11 @@
                     <i class="fas fa-shopping-cart mr-1"></i>Commander (client)
                 </a>
             </div>
+            <p class="mt-2 text-center text-xs">
+                <a href="{{ route('register.commissionnaire.show') }}" class="text-gray-400 hover:text-blue-600 transition-colors">
+                    <i class="fas fa-handshake mr-1"></i>Devenir commissionnaire
+                </a>
+            </p>
         </div>
     </div>
 

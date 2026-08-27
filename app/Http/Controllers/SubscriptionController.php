@@ -157,6 +157,8 @@ class SubscriptionController extends Controller
             'subscription_expiry' => $expiry,
             'plan_id'             => $payment->plan_id,
         ]);
+
+        app(\App\Services\CommissionService::class)->credit($store, $payment);
     }
 
     public function initiateMtn(Request $request, MtnMomoService $mtn)

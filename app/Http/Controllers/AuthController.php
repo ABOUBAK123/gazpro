@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Store;
+use App\Models\Commissionnaire;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
@@ -16,6 +18,9 @@ class AuthController extends Controller
         }
         if (Auth::guard('store')->check() || Auth::guard('staff')->check()) {
             return redirect()->route('store.dashboard');
+        }
+        if (Auth::guard('commissionnaire')->check()) {
+            return redirect()->route('commissionnaire.dashboard');
         }
         return view('auth.login');
     }
@@ -65,6 +70,21 @@ class AuthController extends Controller
             return redirect()->route('store.dashboard');
         }
 
+        // Try commissionnaire
+        if (Auth::guard('commissionnaire')->attempt($credentials, $request->boolean('remember'))) {
+            $commissionnaire = Auth::guard('commissionnaire')->user();
+            if ($commissionnaire->status === 'pending') {
+                Auth::guard('commissionnaire')->logout();
+                return back()->with('error', 'Votre inscription est en attente de validation par l\'administrateur.');
+            }
+            if ($commissionnaire->status === 'rejected') {
+                Auth::guard('commissionnaire')->logout();
+                return back()->with('error', 'Votre inscription a été rejetée. Contactez l\'administrateur.');
+            }
+            $request->session()->regenerate();
+            return redirect()->route('commissionnaire.dashboard');
+        }
+
         return back()->withErrors(['email' => 'Email ou mot de passe incorrect.'])->onlyInput('email');
     }
 
@@ -92,14 +112,57 @@ class AuthController extends Controller
             'password.confirmed'  => 'Les mots de passe ne correspondent pas.',
         ]);
 
+        $commissionnaire = $request->filled('code_parrain')
+            ? Commissionnaire::where('code', $request->code_parrain)->where('status', 'active')->first()
+            : null;
+
         Store::create([
-            'store_name' => $request->store_name,
-            'owner_name' => $request->owner_name,
-            'email'      => $request->email,
-            'phone'      => $request->phone,
-            'password'   => Hash::make($request->password),
-            'address'    => $request->address,
-            'status'     => 'pending',
+            'store_name'         => $request->store_name,
+            'owner_name'         => $request->owner_name,
+            'email'              => $request->email,
+            'phone'              => $request->phone,
+            'password'           => Hash::make($request->password),
+            'address'            => $request->address,
+            'status'             => 'pending',
+            'commissionnaire_id' => $commissionnaire?->id,
+        ]);
+
+        return redirect()->route('login')->with('success', 'Inscription réussie ! Votre demande est en attente de validation par l\'administrateur.');
+    }
+
+    public function showRegisterCommissionnaire()
+    {
+        return view('auth.register-commissionnaire');
+    }
+
+    public function registerCommissionnaire(Request $request)
+    {
+        $request->validate([
+            'name'     => 'required|string|max:255',
+            'email'    => 'required|email|unique:commissionnaires,email',
+            'phone'    => 'required|string|max:20',
+            'password' => 'required|string|min:6|confirmed',
+        ], [
+            'name.required'      => 'Le nom est requis.',
+            'email.required'     => 'L\'email est requis.',
+            'email.unique'       => 'Cet email est déjà utilisé.',
+            'phone.required'     => 'Le téléphone est requis.',
+            'password.required'  => 'Le mot de passe est requis.',
+            'password.min'       => 'Le mot de passe doit avoir au moins 6 caractères.',
+            'password.confirmed' => 'Les mots de passe ne correspondent pas.',
+        ]);
+
+        do {
+            $code = strtoupper(Str::random(7));
+        } while (Commissionnaire::where('code', $code)->exists());
+
+        Commissionnaire::create([
+            'name'     => $request->name,
+            'email'    => $request->email,
+            'phone'    => $request->phone,
+            'password' => Hash::make($request->password),
+            'code'     => $code,
+            'status'   => 'pending',
         ]);
 
         return redirect()->route('login')->with('success', 'Inscription réussie ! Votre demande est en attente de validation par l\'administrateur.');
@@ -110,6 +173,7 @@ class AuthController extends Controller
         Auth::guard('admin')->logout();
         Auth::guard('store')->logout();
         Auth::guard('staff')->logout();
+        Auth::guard('commissionnaire')->logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
         return redirect()->route('login');

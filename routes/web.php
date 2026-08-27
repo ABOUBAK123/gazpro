@@ -19,6 +19,8 @@ use App\Http\Controllers\AdminPlanController;
 use App\Http\Controllers\AdminProfileController;
 use App\Http\Controllers\AppDownloadController;
 use App\Http\Controllers\LandingController;
+use App\Http\Controllers\CommissionnaireController;
+use App\Http\Controllers\AdminCommissionnaireController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProfitController;
@@ -39,6 +41,8 @@ Route::get('/login',     [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login',    [AuthController::class, 'login']);
 Route::get('/register',  [AuthController::class, 'showRegister'])->name('register');
 Route::post('/register', [AuthController::class, 'register']);
+Route::get('/inscription-commissionnaire',  [AuthController::class, 'showRegisterCommissionnaire'])->name('register.commissionnaire.show');
+Route::post('/inscription-commissionnaire', [AuthController::class, 'registerCommissionnaire'])->name('register.commissionnaire');
 Route::post('/logout',   [AuthController::class, 'logout'])->name('logout');
 
 // Livreur mobile app (public, token-based)
@@ -89,6 +93,12 @@ Route::middleware(\App\Http\Middleware\AuthenticateAdmin::class)->prefix('admin'
     Route::patch('/stores/{store}/approve', [AdminController::class, 'approveStore'])->name('stores.approve');
     Route::patch('/stores/{store}/reject',  [AdminController::class, 'rejectStore'])->name('stores.reject');
     Route::patch('/stores/{store}/generate-qr', [AdminController::class, 'generateStoreQr'])->name('stores.generate_qr');
+
+    // Commissionnaires
+    Route::get('/commissionnaires', [AdminCommissionnaireController::class, 'index'])->name('commissionnaires');
+    Route::patch('/commissionnaires/{commissionnaire}/approve', [AdminCommissionnaireController::class, 'approve'])->name('commissionnaires.approve');
+    Route::patch('/commissionnaires/{commissionnaire}/reject',  [AdminCommissionnaireController::class, 'reject'])->name('commissionnaires.reject');
+    Route::get('/commissions', [AdminCommissionnaireController::class, 'transactions'])->name('commissions');
     Route::get('/currencies',              [AdminController::class, 'currencies'])->name('currencies');
     Route::post('/currencies',             [AdminController::class, 'storeCurrency'])->name('currencies.store');
     Route::put('/currencies/{currency}',   [AdminController::class, 'updateCurrency'])->name('currencies.update');
@@ -135,6 +145,14 @@ Route::middleware(\App\Http\Middleware\AuthenticateAdmin::class)->prefix('admin'
     Route::get('/profil/parametres', [AdminProfileController::class, 'settings'])->name('profile.settings');
     Route::put('/profil/parametres', [AdminProfileController::class, 'update'])->name('profile.update');
 });
+
+// Commissionnaire routes
+Route::middleware(\App\Http\Middleware\AuthenticateCommissionnaire::class)
+    ->prefix('commissionnaire')->name('commissionnaire.')->group(function () {
+        Route::get('/dashboard',     [CommissionnaireController::class, 'dashboard'])->name('dashboard');
+        Route::get('/filleuls',      [CommissionnaireController::class, 'stores'])->name('stores');
+        Route::get('/transactions',  [CommissionnaireController::class, 'transactions'])->name('transactions');
+    });
 
 // Store (manager + staff) routes
 Route::middleware(\App\Http\Middleware\AuthenticateStore::class)->group(function () {

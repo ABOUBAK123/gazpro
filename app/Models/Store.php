@@ -13,7 +13,7 @@ class Store extends Authenticatable
         'store_name', 'owner_name', 'avatar', 'email', 'phone', 'password',
         'address', 'latitude', 'longitude', 'status',
         'subscription_status', 'subscription_expiry',
-        'plan_id', 'qr_token', 'qr_code_path', 'qr_generated_at',
+        'plan_id', 'qr_token', 'qr_code_path', 'qr_generated_at', 'commissionnaire_id',
     ];
 
     protected $hidden = ['password', 'remember_token'];
@@ -30,6 +30,11 @@ class Store extends Authenticatable
     public function plan()
     {
         return $this->belongsTo(Plan::class);
+    }
+
+    public function commissionnaire()
+    {
+        return $this->belongsTo(Commissionnaire::class);
     }
 
     public function staff()

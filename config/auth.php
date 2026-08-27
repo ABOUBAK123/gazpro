@@ -3,6 +3,7 @@
 use App\Models\Admin;
 use App\Models\Store;
 use App\Models\Staff;
+use App\Models\Commissionnaire;
 
 return [
 
@@ -24,6 +25,10 @@ return [
             'driver' => 'session',
             'provider' => 'staff',
         ],
+        'commissionnaire' => [
+            'driver' => 'session',
+            'provider' => 'commissionnaires',
+        ],
     ],
 
     'providers' => [
@@ -38,6 +43,10 @@ return [
         'staff' => [
             'driver' => 'eloquent',
             'model' => Staff::class,
+        ],
+        'commissionnaires' => [
+            'driver' => 'eloquent',
+            'model' => Commissionnaire::class,
         ],
     ],
 
