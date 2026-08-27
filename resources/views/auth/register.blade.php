@@ -4,16 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GazManager — Inscription magasin</title>
-    <script>tailwind = { config: {} }</script>
-    <script src="{{ asset('tailwind.min.js') }}"></script>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <style type="text/tailwindcss">
-        .field {
-            @apply w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-800
-                   outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-100 bg-white;
-        }
-        .field-label { @apply block text-sm font-semibold text-gray-700 mb-1.5; }
-    </style>
 </head>
 <body style="background:linear-gradient(135deg,#0f172a 0%,#1e3a8a 50%,#1d4ed8 100%);min-height:100vh;"
       class="flex items-center justify-center p-4">

@@ -4,19 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GazManager — Mot de passe oublié</title>
-    <script>tailwind = { config: {} }</script>
-    <script src="{{ asset('tailwind.min.js') }}"></script>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <style type="text/tailwindcss">
-        .input-field {
-            @apply w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-800
-                   outline-none transition-all duration-200
-                   focus:border-blue-500 focus:ring-4 focus:ring-blue-100 bg-white;
-        }
-        .input-icon {
-            @apply absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm pointer-events-none;
-        }
-    </style>
 </head>
 <body style="background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #1d4ed8 100%); min-height:100vh;"
       class="flex items-center justify-center p-4">

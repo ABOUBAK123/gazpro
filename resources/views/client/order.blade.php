@@ -11,51 +11,9 @@
     <meta name="apple-mobile-web-app-title" content="GazOrder">
     <title>Commander du gaz — GazManager</title>
 
-    <script>tailwind = { config: {} }</script>
-    <script src="{{ asset('tailwind.min.js') }}"></script>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script src="{{ asset('alpine.min.js') }}" defer></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-
-    <style type="text/tailwindcss">
-        * { -webkit-tap-highlight-color: transparent; }
-
-        .store-card {
-            @apply flex items-center gap-4 bg-white rounded-2xl p-4 shadow-sm
-                   border-2 border-transparent cursor-pointer
-                   transition-all duration-150 active:scale-[0.97];
-        }
-        .store-card.selected { @apply border-blue-500 bg-blue-50 shadow-blue-100; }
-
-        .brand-card {
-            @apply flex flex-col items-center gap-2 p-4 rounded-2xl border-2 border-gray-100
-                   bg-white cursor-pointer transition-all duration-150 active:scale-95 select-none;
-        }
-        .brand-card.selected { @apply border-blue-500 bg-blue-50; }
-
-        .weight-btn {
-            @apply px-4 py-2.5 rounded-2xl border-2 border-gray-200 text-sm font-bold
-                   cursor-pointer transition-all duration-150 active:scale-95 text-gray-700 bg-white select-none;
-        }
-        .weight-btn.selected { @apply border-blue-500 bg-blue-500 text-white; }
-        .weight-btn.sold-out { @apply opacity-40 cursor-not-allowed line-through; }
-
-        .field {
-            @apply w-full border-2 border-gray-200 rounded-2xl px-4 py-3.5 text-base
-                   outline-none transition bg-white
-                   focus:border-blue-500 focus:ring-4 focus:ring-blue-100;
-        }
-
-        .step-enter { animation: stepIn .28s ease-out both; }
-        @keyframes stepIn {
-            from { opacity: 0; transform: translateY(16px); }
-            to   { opacity: 1; transform: translateY(0); }
-        }
-        .success-enter { animation: successPop .45s cubic-bezier(.22,1,.36,1) both; }
-        @keyframes successPop {
-            from { opacity: 0; transform: scale(.92); }
-            to   { opacity: 1; transform: scale(1); }
-        }
-    </style>
 </head>
 <body class="bg-gray-50" style="min-height:100dvh;">
 
@@ -393,7 +351,7 @@
                         <i class="fas fa-user text-gray-400 mr-1"></i>Votre nom complet *
                     </label>
                     <input type="text" x-model="customerName"
-                           class="field" placeholder="Ex : Jean Dupont"
+                           class="order-field" placeholder="Ex : Jean Dupont"
                            autocomplete="name" inputmode="text">
                     <p x-show="customerName.length > 0 && customerName.trim().length < 2"
                        class="text-xs text-red-500 mt-1">
@@ -406,7 +364,7 @@
                         <i class="fas fa-phone text-gray-400 mr-1"></i>Numéro de téléphone *
                     </label>
                     <input type="tel" x-model="customerPhone"
-                           class="field" placeholder="Ex : +225 07 00 00 00 00"
+                           class="order-field" placeholder="Ex : +225 07 00 00 00 00"
                            autocomplete="tel" inputmode="tel">
                     <p x-show="customerPhone.length > 0 && customerPhone.replace(/\D/g,'').length < 8"
                        class="text-xs text-red-500 mt-1">
@@ -444,7 +402,7 @@
                     <label class="block text-xs font-bold text-gray-700 mb-2 uppercase tracking-wide">
                         <i class="fas fa-sticky-note text-gray-400 mr-1"></i>Notes / Instructions (optionnel)
                     </label>
-                    <textarea x-model="notes" class="field" rows="3"
+                    <textarea x-model="notes" class="order-field" rows="3"
                               placeholder="Ex : 2ème étage appt 3B, quartier Cocody, bâtiment bleu…"></textarea>
                 </div>
             </div>

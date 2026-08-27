@@ -7,51 +7,9 @@
     <title>{{ config('app.name', 'GazManager') }} - @yield('title', 'Tableau de bord')</title>
 
     {{-- Assets --}}
-    <script>
-        tailwind = { config: { theme: { extend: { colors: { brand: '#2D3A8C' } } } } }
-    </script>
-    <script src="{{ asset('tailwind.min.js') }}"></script>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script src="{{ asset('alpine.min.js') }}" defer></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-
-    {{-- 5. Styles personnalisés via type="text/tailwindcss" → @apply fonctionne --}}
-    <style type="text/tailwindcss">
-        [x-cloak] { display: none !important; }
-
-        .badge       { @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium; }
-
-        .btn         { @apply inline-flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-sm transition-all duration-200 cursor-pointer border-0; }
-        .btn-primary   { @apply bg-blue-600 text-white hover:bg-blue-700; }
-        .btn-success   { @apply bg-green-600 text-white hover:bg-green-700; }
-        .btn-danger    { @apply bg-red-600   text-white hover:bg-red-700; }
-        .btn-warning   { @apply bg-yellow-500 text-white hover:bg-yellow-600; }
-        .btn-secondary { @apply bg-gray-100 text-gray-700 hover:bg-gray-200; }
-
-        .card        { @apply bg-white rounded-2xl shadow-sm border border-gray-100 p-6; }
-        .stat-card   { @apply bg-white rounded-2xl shadow-sm border border-gray-100 p-5; }
-
-        .form-input  { @apply w-full border border-gray-300 rounded-xl px-3 py-2 text-sm outline-none
-                              transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100; }
-        .form-label  { @apply block text-sm font-medium text-gray-700 mb-1; }
-        .form-select { @apply w-full border border-gray-300 rounded-xl px-3 py-2 text-sm outline-none
-                              transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100 bg-white; }
-
-        /* Navigation horizontale */
-        .nav-item {
-            @apply flex flex-col items-center gap-0.5 px-3.5 py-2 rounded-xl
-                   text-white/75 font-semibold whitespace-nowrap cursor-pointer
-                   transition-all duration-150 border-0 bg-transparent no-underline;
-            font-size: 0.70rem;
-        }
-        .nav-item i  { @apply text-base mb-px; }
-        .nav-item:hover  { @apply bg-white/15 text-white; }
-        .nav-item.active { @apply bg-white/20 text-white shadow-md; }
-
-        /* Tables */
-        .table-header { @apply text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide; }
-        .table-cell   { @apply px-4 py-3 text-sm text-gray-700; }
-        .table-row    { @apply hover:bg-gray-50/60 transition-colors; }
-    </style>
 
     @stack('styles')
 </head>

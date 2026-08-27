@@ -6,8 +6,7 @@
     <meta name="theme-color" content="#1e3a8a">
     <title>Télécharger l'application — {{ $store->store_name }}</title>
 
-    <script>tailwind = { config: {} }</script>
-    <script src="{{ asset('tailwind.min.js') }}"></script>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body class="bg-gradient-to-b from-blue-50 to-white min-h-screen flex flex-col items-center justify-center p-4">

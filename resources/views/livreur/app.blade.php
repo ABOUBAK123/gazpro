@@ -13,29 +13,9 @@
     <link rel="apple-touch-icon" href="{{ asset('icons/livreur-192.png') }}">
     <title>{{ $livreur->name }} — Livreur</title>
 
-    <script>tailwind = { config: {} }</script>
-    <script src="{{ asset('tailwind.min.js') }}"></script>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script src="{{ asset('alpine.min.js') }}" defer></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-
-    <style type="text/tailwindcss">
-        * { -webkit-tap-highlight-color: transparent; }
-        .order-card {
-            @apply bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden transition-all duration-200;
-        }
-        .action-btn {
-            @apply flex items-center justify-center gap-2 py-3 rounded-2xl font-bold text-sm
-                   transition-all active:scale-[0.97] cursor-pointer;
-        }
-        .tab-btn { @apply flex-1 py-2.5 text-sm font-bold rounded-xl transition-all; }
-        .tab-btn.active   { @apply bg-white shadow text-gray-900; }
-        .tab-btn.inactive { @apply text-gray-500; }
-        .enter { animation: fadeUp .25s ease-out both; }
-        @keyframes fadeUp {
-            from { opacity:0; transform:translateY(12px); }
-            to   { opacity:1; transform:translateY(0); }
-        }
-    </style>
 </head>
 <body style="background:#f1f5f9;min-height:100dvh;">
 
@@ -102,7 +82,7 @@
         <div class="px-4 pb-3">
             <div class="flex gap-1 bg-white/10 rounded-2xl p-1">
                 <button @click="tab='active'"
-                        :class="tab==='active' ? 'tab-btn active' : 'tab-btn inactive'">
+                        :class="tab==='active' ? 'livreur-tab-btn active' : 'livreur-tab-btn inactive'">
                     <i class="fas fa-motorcycle mr-1.5"></i>Actives
                     <span x-show="{{ $active->count() }} > 0"
                           class="ml-1.5 inline-flex items-center justify-center w-5 h-5 rounded-full text-xs font-black"
@@ -111,7 +91,7 @@
                     </span>
                 </button>
                 <button @click="tab='history'"
-                        :class="tab==='history' ? 'tab-btn active' : 'tab-btn inactive'">
+                        :class="tab==='history' ? 'livreur-tab-btn active' : 'livreur-tab-btn inactive'">
                     <i class="fas fa-history mr-1.5"></i>Historique
                 </button>
             </div>

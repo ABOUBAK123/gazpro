@@ -4,8 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GazManager — Gérez votre dépôt de gaz</title>
-    <script>tailwind = { config: {} }</script>
-    <script src="{{ asset('tailwind.min.js') }}"></script>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body class="bg-gray-50">
@@ -58,7 +57,14 @@
                 Aucune formule n'est disponible pour le moment.
             </div>
         @else
-        <div class="grid grid-cols-1 sm:grid-cols-{{ min($plans->count(), 3) }} gap-6">
+        @php
+            $gridClass = match(min($plans->count(), 3)) {
+                1 => 'sm:grid-cols-1',
+                2 => 'sm:grid-cols-2',
+                default => 'sm:grid-cols-3',
+            };
+        @endphp
+        <div class="grid grid-cols-1 {{ $gridClass }} gap-6">
             @foreach($plans as $plan)
             @php $isFree = (float) $plan->price === 0.0; @endphp
             <div class="bg-white rounded-3xl shadow-lg p-6 flex flex-col {{ $isFree ? 'ring-2 ring-amber-400' : '' }}">
