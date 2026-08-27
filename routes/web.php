@@ -21,6 +21,7 @@ use App\Http\Controllers\AppDownloadController;
 use App\Http\Controllers\LandingController;
 use App\Http\Controllers\CommissionnaireController;
 use App\Http\Controllers\AdminCommissionnaireController;
+use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProfitController;
@@ -44,6 +45,11 @@ Route::post('/register', [AuthController::class, 'register']);
 Route::get('/inscription-commissionnaire',  [AuthController::class, 'showRegisterCommissionnaire'])->name('register.commissionnaire.show');
 Route::post('/inscription-commissionnaire', [AuthController::class, 'registerCommissionnaire'])->name('register.commissionnaire');
 Route::post('/logout',   [AuthController::class, 'logout'])->name('logout');
+
+Route::get('/mot-de-passe-oublie',  [PasswordResetController::class, 'showForgotPassword'])->name('password.forgot');
+Route::post('/mot-de-passe-oublie', [PasswordResetController::class, 'sendResetLink'])->name('password.forgot.send');
+Route::get('/reinitialiser-mot-de-passe/{token}',  [PasswordResetController::class, 'showResetForm'])->name('password.reset.form');
+Route::post('/reinitialiser-mot-de-passe',         [PasswordResetController::class, 'reset'])->name('password.reset');
 
 // Livreur mobile app (public, token-based)
 Route::get('/livreur/{token}',                             [LivreurController::class, 'mobileApp'])->name('livreur.app');

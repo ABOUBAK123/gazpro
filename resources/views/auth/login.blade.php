@@ -97,11 +97,16 @@
                     </div>
                 </div>
 
-                {{-- Remember --}}
-                <div class="flex items-center gap-2">
-                    <input type="checkbox" name="remember" id="remember"
-                           class="w-3.5 h-3.5 rounded border-gray-300 text-blue-600 cursor-pointer">
-                    <label for="remember" class="text-xs text-gray-500 cursor-pointer">Se souvenir de moi</label>
+                {{-- Remember + mot de passe oublié --}}
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <input type="checkbox" name="remember" id="remember"
+                               class="w-3.5 h-3.5 rounded border-gray-300 text-blue-600 cursor-pointer">
+                        <label for="remember" class="text-xs text-gray-500 cursor-pointer">Se souvenir de moi</label>
+                    </div>
+                    <a href="{{ route('password.forgot') }}" class="text-xs text-blue-600 hover:text-blue-800 font-medium transition-colors">
+                        Mot de passe oublié ?
+                    </a>
                 </div>
 
                 {{-- Submit --}}
