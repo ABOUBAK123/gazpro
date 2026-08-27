@@ -336,6 +336,56 @@
         </form>
     </div>
 
+    {{-- ── 5. Retrait commissionnaires (MTN Disbursement) ──────────── --}}
+    @php $disb = AppSetting::get('payment_provider_mtn_disbursement', []); @endphp
+    <div class="card">
+        <div class="flex items-center gap-3 mb-5">
+            <div class="w-10 h-10 rounded-xl flex items-center justify-center shadow-sm"
+                 style="background:linear-gradient(135deg,#FFCC00,#FFE680);">
+                <i class="fas fa-money-bill-transfer text-white"></i>
+            </div>
+            <div class="flex-1">
+                <h3 class="font-semibold text-gray-800">Retrait commissionnaires (MTN Disbursement)</h3>
+                <p class="text-xs text-gray-500">Produit MTN distinct de Collections — nécessite son propre abonnement sur le portail MTN Developer.</p>
+            </div>
+            @if(!empty($disb['api_user']) && !empty($disb['api_key']) && !empty($disb['subscription_key']))
+                <span class="badge bg-green-100 text-green-700"><i class="fas fa-circle text-xs mr-1"></i>Configuré</span>
+            @else
+                <span class="badge bg-amber-100 text-amber-700"><i class="fas fa-exclamation-circle text-xs mr-1"></i>Non configuré</span>
+            @endif
+        </div>
+        <form action="{{ route('admin.subscription.disbursement') }}" method="POST" class="space-y-4">
+            @csrf
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="form-label">Subscription Key</label>
+                    <input type="text" name="subscription_key" value="{{ $disb['subscription_key'] ?? '' }}" class="form-input font-mono text-sm">
+                </div>
+                <div>
+                    <label class="form-label">API User (UUID)</label>
+                    <input type="text" name="api_user" value="{{ $disb['api_user'] ?? '' }}" class="form-input font-mono text-sm">
+                </div>
+                <div>
+                    <label class="form-label">API Key</label>
+                    <input type="password" name="api_key" value="{{ $disb['api_key'] ?? '' }}" class="form-input font-mono text-sm">
+                </div>
+                <div>
+                    <label class="form-label">Environnement</label>
+                    <input type="text" name="target_environment" value="{{ $disb['target_environment'] ?? 'sandbox' }}"
+                           placeholder="sandbox ou production" class="form-input">
+                </div>
+                <div class="sm:col-span-2">
+                    <label class="form-label">URL de base (optionnel, production)</label>
+                    <input type="text" name="base_url" value="{{ $disb['base_url'] ?? '' }}"
+                           placeholder="https://proxy.momoapi.mtn.com" class="form-input">
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Enregistrer
+            </button>
+        </form>
+    </div>
+
 </div>
 
 @push('scripts')

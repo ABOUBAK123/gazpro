@@ -106,6 +106,7 @@ Route::middleware(\App\Http\Middleware\AuthenticateAdmin::class)->prefix('admin'
     Route::get('/subscription',        [AdminController::class, 'subscriptionSettings'])->name('subscription');
     Route::put('/subscription',        [AdminController::class, 'updateSubscription'])->name('subscription.update');
     Route::post('/subscription/logos', [AdminController::class, 'uploadPaymentLogos'])->name('subscription.logos');
+    Route::post('/subscription/disbursement', [AdminController::class, 'saveDisbursementConfig'])->name('subscription.disbursement');
 
     // Subscription plans
     Route::get('/plans',                [AdminPlanController::class, 'index'])->name('plans.index');
@@ -152,6 +153,8 @@ Route::middleware(\App\Http\Middleware\AuthenticateCommissionnaire::class)
         Route::get('/dashboard',     [CommissionnaireController::class, 'dashboard'])->name('dashboard');
         Route::get('/filleuls',      [CommissionnaireController::class, 'stores'])->name('stores');
         Route::get('/transactions',  [CommissionnaireController::class, 'transactions'])->name('transactions');
+        Route::post('/retrait',      [CommissionnaireController::class, 'withdraw'])->name('withdraw');
+        Route::get('/retrait/statut/{transaction}', [CommissionnaireController::class, 'pollWithdraw'])->name('withdraw.poll');
     });
 
 // Store (manager + staff) routes

@@ -189,4 +189,26 @@ class AdminController extends Controller
 
         return back()->with('success', 'Logos mis à jour avec succès.');
     }
+
+    public function saveDisbursementConfig(Request $request)
+    {
+        $request->validate([
+            'subscription_key'   => 'nullable|string',
+            'api_user'           => 'nullable|string',
+            'api_key'            => 'nullable|string',
+            'target_environment' => 'nullable|string',
+            'base_url'           => 'nullable|string',
+        ]);
+
+        $config = AppSetting::get('payment_provider_mtn_disbursement', []);
+        foreach (['subscription_key', 'api_user', 'api_key', 'target_environment', 'base_url'] as $field) {
+            if ($request->filled($field)) {
+                $config[$field] = $request->input($field);
+            }
+        }
+
+        AppSetting::set('payment_provider_mtn_disbursement', $config);
+
+        return back()->with('success', 'Configuration MTN Disbursement mise à jour.');
+    }
 }
