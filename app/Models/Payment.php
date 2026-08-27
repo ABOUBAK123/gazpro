@@ -8,7 +8,7 @@ class Payment extends Model
 {
     protected $fillable = [
         'store_id', 'amount', 'currency', 'payment_method',
-        'reference', 'status', 'plan', 'plan_id', 'expires_at',
+        'reference', 'phone', 'status', 'plan', 'plan_id', 'expires_at',
     ];
 
     protected function casts(): array

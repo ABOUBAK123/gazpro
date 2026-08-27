@@ -28,10 +28,12 @@
             'border'  => '#FFE680',
             'icon'    => 'fas fa-mobile-alt',
             'fields'  => [
-                'subscription_key' => ['label' => 'Subscription Key', 'type' => 'text'],
-                'api_user'         => ['label' => 'API User (UUID)', 'type' => 'text'],
-                'api_key'          => ['label' => 'API Key', 'type' => 'password'],
-                'callback_host'    => ['label' => 'Callback Host (optionnel)', 'type' => 'text', 'placeholder' => 'https://gazpro.dyula.ci'],
+                'subscription_key'   => ['label' => 'Subscription Key', 'type' => 'text'],
+                'api_user'           => ['label' => 'API User (UUID)', 'type' => 'text'],
+                'api_key'            => ['label' => 'API Key', 'type' => 'password'],
+                'target_environment' => ['label' => 'Environnement', 'type' => 'text', 'placeholder' => 'sandbox ou production'],
+                'base_url'           => ['label' => 'URL de base (optionnel, production)', 'type' => 'text', 'placeholder' => 'https://proxy.momoapi.mtn.com'],
+                'callback_host'      => ['label' => 'Callback Host (optionnel)', 'type' => 'text', 'placeholder' => 'https://gazpro.dyula.ci'],
             ],
         ],
         'wave' => [

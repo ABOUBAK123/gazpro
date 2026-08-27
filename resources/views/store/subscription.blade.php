@@ -6,7 +6,9 @@
     $isActive  = $store->hasActiveSubscription();
     $expiry    = $store->subscription_expiry;
     $daysLeft  = $expiry ? now()->diffInDays($expiry, false) : null;
-    $planLabel = fn($payment) => $payment->plan_id && $payment->plan ? $payment->plan->name : ucfirst($payment->plan);
+    $planLabel = fn($payment) => $payment->plan_id
+        ? (\App\Models\Plan::find($payment->plan_id)?->name ?? ucfirst($payment->plan))
+        : ucfirst($payment->plan);
     $methodLabel = function(string $m): string {
         return match(true) {
             str_contains($m, 'orange')  => 'Orange Money',
@@ -66,7 +68,55 @@
     </div>
 
     {{-- ── Choix du plan ────────────────────────────────────────── --}}
-    <div x-data="{ planId: {{ $plans->first()->id ?? 'null' }}, plans: {{ $plans->keyBy('id')->toJson() }} }">
+    <div x-data="{
+        planId: {{ $plans->first()->id ?? 'null' }},
+        plans: {{ $plans->keyBy('id')->toJson() }},
+        method: 'cinetpay',
+        mtnPhone: '',
+        mtnState: 'idle',
+        mtnError: '',
+        mtnPaymentId: null,
+        mtnPollTimer: null,
+        mtnElapsed: 0,
+
+        async payMtn() {
+            this.mtnState = 'submitting'; this.mtnError = '';
+            const res = await fetch('{{ route('subscription.mtn.initiate') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
+                },
+                body: JSON.stringify({ plan_id: this.planId, phone: this.mtnPhone }),
+            });
+            const data = await res.json();
+            if (!res.ok) { this.mtnState = 'error'; this.mtnError = data.error || 'Erreur lors de la demande.'; return; }
+            this.mtnPaymentId = data.payment_id;
+            this.mtnState = 'waiting'; this.mtnElapsed = 0;
+            this.mtnPollTimer = setInterval(() => this.pollMtn(), 4000);
+        },
+
+        async pollMtn() {
+            this.mtnElapsed += 4;
+            if (this.mtnElapsed >= 120) {
+                clearInterval(this.mtnPollTimer);
+                this.mtnState = 'error';
+                this.mtnError = 'Délai dépassé. Vérifiez votre téléphone ou réessayez.';
+                return;
+            }
+            const res = await fetch(`/abonnement/mtn/statut/${this.mtnPaymentId}`);
+            const data = await res.json();
+            if (data.status === 'completed') {
+                clearInterval(this.mtnPollTimer);
+                this.mtnState = 'success';
+                setTimeout(() => location.reload(), 1500);
+            } else if (data.status === 'failed') {
+                clearInterval(this.mtnPollTimer);
+                this.mtnState = 'error';
+                this.mtnError = 'Paiement refusé ou annulé.';
+            }
+        },
+    }">
         <h3 class="font-semibold text-gray-800 mb-4">
             {{ $isActive ? 'Renouveler / Prolonger' : 'Choisir un plan' }}
         </h3>
@@ -134,8 +184,24 @@
             </div>
         </div>
 
-        {{-- Bouton payer --}}
-        <form action="{{ route('subscription.initiate') }}" method="POST">
+        {{-- Choix de la méthode de paiement --}}
+        <div class="flex gap-3 mb-4">
+            <button type="button" @click="method='cinetpay'"
+                    :class="method==='cinetpay' ? 'ring-2 ring-blue-600 bg-blue-50 border-blue-200' : 'border-gray-200'"
+                    class="border-2 rounded-xl px-4 py-3 flex-1 text-left transition-all">
+                <div class="font-medium text-sm text-gray-800">CinetPay</div>
+                <div class="text-xs text-gray-500">Orange, Wave, Carte...</div>
+            </button>
+            <button type="button" @click="method='mtn'"
+                    :class="method==='mtn' ? 'ring-2 ring-yellow-500 bg-yellow-50 border-yellow-200' : 'border-gray-200'"
+                    class="border-2 rounded-xl px-4 py-3 flex-1 text-left transition-all">
+                <div class="font-medium text-sm text-gray-800">MTN Mobile Money</div>
+                <div class="text-xs text-gray-500">Paiement direct</div>
+            </button>
+        </div>
+
+        {{-- Bouton payer — CinetPay --}}
+        <form x-show="method==='cinetpay'" action="{{ route('subscription.initiate') }}" method="POST">
             @csrf
             <input type="hidden" name="plan_id" :value="planId">
             <button type="submit" :disabled="!planId"
@@ -146,9 +212,34 @@
             </button>
         </form>
 
+        {{-- Paiement direct MTN --}}
+        <div x-show="method==='mtn'" x-cloak>
+            <template x-if="mtnState==='idle' || mtnState==='error'">
+                <div>
+                    <label class="text-sm font-medium text-gray-700">Numéro Mobile Money (MTN)</label>
+                    <input type="tel" x-model="mtnPhone" placeholder="0500000000"
+                           class="form-input mt-1 mb-3 w-full sm:w-72">
+                    <p x-show="mtnError" x-text="mtnError" class="text-sm text-red-600 mb-2"></p>
+                    <button type="button" @click="payMtn()" :disabled="!planId || !mtnPhone"
+                            class="btn btn-primary px-8 py-3 disabled:opacity-50">
+                        <i class="fas fa-mobile-alt mr-1"></i> Payer via MTN MoMo
+                    </button>
+                </div>
+            </template>
+            <template x-if="mtnState==='submitting'">
+                <p class="text-sm text-gray-600"><i class="fas fa-spinner fa-spin mr-1"></i> Envoi de la demande...</p>
+            </template>
+            <template x-if="mtnState==='waiting'">
+                <p class="text-sm text-gray-600"><i class="fas fa-spinner fa-spin mr-1"></i> Confirmez sur votre téléphone (composez le code envoyé)...</p>
+            </template>
+            <template x-if="mtnState==='success'">
+                <p class="text-sm text-green-600"><i class="fas fa-check-circle mr-1"></i> Paiement confirmé !</p>
+            </template>
+        </div>
+
         <p class="text-xs text-gray-400 mt-3 flex items-center gap-1">
             <i class="fas fa-shield-alt text-green-500"></i>
-            Paiement sécurisé via CinetPay · Vos données bancaires ne nous sont jamais transmises
+            Paiement sécurisé · Vos données bancaires ne nous sont jamais transmises
         </p>
     </div>
 

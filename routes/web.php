@@ -31,6 +31,9 @@ Route::get('/', [LandingController::class, 'index'])->name('landing');
 // CinetPay IPN webhook (public, no auth, no CSRF — exempted in bootstrap/app.php)
 Route::post('/abonnement/notify', [SubscriptionController::class, 'notify'])->name('subscription.notify');
 
+// MTN MoMo webhook (public, no auth, no CSRF — exempted in bootstrap/app.php)
+Route::post('/abonnement/mtn/notify', [SubscriptionController::class, 'notifyMtn'])->name('subscription.mtn.notify');
+
 // Auth routes
 Route::get('/login',     [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login',    [AuthController::class, 'login']);
@@ -152,6 +155,8 @@ Route::middleware(\App\Http\Middleware\AuthenticateStore::class)->group(function
     Route::get('/abonnement',          [SubscriptionController::class, 'index'])->name('subscription.index');
     Route::post('/abonnement/payer',   [SubscriptionController::class, 'initiate'])->name('subscription.initiate');
     Route::get('/abonnement/retour',   [SubscriptionController::class, 'returnPage'])->name('subscription.return');
+    Route::post('/abonnement/mtn/payer',           [SubscriptionController::class, 'initiateMtn'])->name('subscription.mtn.initiate');
+    Route::get('/abonnement/mtn/statut/{payment}', [SubscriptionController::class, 'pollMtn'])->name('subscription.mtn.poll');
 
     // Stock
     Route::get('/stock',            [StockController::class, 'index'])->name('stock.index');

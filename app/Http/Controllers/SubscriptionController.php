@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
@@ -10,6 +11,8 @@ use App\Models\Store;
 use App\Models\Payment;
 use App\Models\Plan;
 use App\Models\AppSetting;
+use App\Services\MtnMomoService;
+use RuntimeException;
 
 class SubscriptionController extends Controller
 {
@@ -128,28 +131,131 @@ class SubscriptionController extends Controller
 
         if ($status === 'ACCEPTED') {
             $method = $result['data']['payment_method'] ?? 'cinetpay';
-
-            $payment->update([
-                'status'         => 'completed',
-                'payment_method' => $method,
-            ]);
-
-            $durationDays = $payment->plan_id ? $payment->plan->duration_days : 30;
-            $expiry = now()->addDays($durationDays);
-
-            // Extend if already active
-            $store = $payment->store;
-            if ($store->hasActiveSubscription()) {
-                $expiry = $store->subscription_expiry->addDays($durationDays);
-            }
-
-            $store->update([
-                'subscription_status' => 'active',
-                'subscription_expiry' => $expiry,
-                'plan_id'             => $payment->plan_id,
-            ]);
+            $this->applySuccessfulPayment($payment, $method);
         } else {
             $payment->update(['status' => 'failed']);
+        }
+
+        return response('OK');
+    }
+
+    private function applySuccessfulPayment(Payment $payment, string $paymentMethod): void
+    {
+        $payment->update([
+            'status'         => 'completed',
+            'payment_method' => $paymentMethod,
+        ]);
+
+        $durationDays = $payment->plan_id ? Plan::find($payment->plan_id)?->duration_days ?? 30 : 30;
+        $store = $payment->store;
+
+        $baseline = $store->hasActiveSubscription() ? $store->subscription_expiry : now();
+        $expiry = Carbon::parse($baseline)->addDays($durationDays);
+
+        $store->update([
+            'subscription_status' => 'active',
+            'subscription_expiry' => $expiry,
+            'plan_id'             => $payment->plan_id,
+        ]);
+    }
+
+    public function initiateMtn(Request $request, MtnMomoService $mtn)
+    {
+        $request->validate([
+            'plan_id' => 'required|exists:plans,id',
+            'phone'   => 'required|string|min:8|max:15',
+        ]);
+
+        $store = $this->currentStore();
+        $plan  = Plan::findOrFail($request->plan_id);
+
+        $providerConfig = AppSetting::get('payment_provider_mtn_money', []);
+        if (empty($providerConfig['active'] ?? false) || empty($providerConfig['api_user'])) {
+            return response()->json(['error' => "MTN Mobile Money n'est pas disponible actuellement."], 422);
+        }
+
+        $payment = Payment::create([
+            'store_id'       => $store->id,
+            'amount'         => $plan->price,
+            'currency'       => $plan->currency,
+            'payment_method' => 'mtn_money',
+            'status'         => 'pending',
+            'plan'           => $plan->slug,
+            'plan_id'        => $plan->id,
+            'phone'          => $request->phone,
+        ]);
+
+        try {
+            $referenceId = $mtn->requestToPay(
+                amount: $plan->price,
+                planCurrency: $plan->currency,
+                phone: $request->phone,
+                externalId: (string) $payment->id,
+            );
+        } catch (RuntimeException $e) {
+            $payment->update(['status' => 'failed']);
+            return response()->json(['error' => $e->getMessage()], 422);
+        }
+
+        $payment->update(['reference' => $referenceId]);
+
+        return response()->json(['payment_id' => $payment->id, 'status' => 'pending']);
+    }
+
+    public function pollMtn(Request $request, Payment $payment, MtnMomoService $mtn)
+    {
+        $store = $this->currentStore();
+        abort_unless($payment->store_id === $store->id, 403);
+
+        if ($payment->status !== 'pending') {
+            return response()->json(['status' => $payment->status]);
+        }
+
+        try {
+            $result = $mtn->checkStatus($payment->reference);
+        } catch (RuntimeException $e) {
+            return response()->json(['status' => 'pending']);
+        }
+
+        $mtnStatus = $result['status'] ?? 'PENDING';
+
+        if ($mtnStatus === 'SUCCESSFUL') {
+            $this->applySuccessfulPayment($payment, 'mtn_money');
+            return response()->json(['status' => 'completed']);
+        }
+
+        if ($mtnStatus === 'FAILED') {
+            $payment->update(['status' => 'failed']);
+            return response()->json(['status' => 'failed', 'reason' => $result['reason'] ?? null]);
+        }
+
+        return response()->json(['status' => 'pending']);
+    }
+
+    // MTN callback (public, no auth, no CSRF) — best-effort only, always re-verifies via checkStatus()
+    public function notifyMtn(Request $request)
+    {
+        $referenceId = $request->input('referenceId');
+        if (!$referenceId) {
+            return response('OK');
+        }
+
+        $payment = Payment::where('reference', $referenceId)->where('payment_method', 'mtn_money')->first();
+        if (!$payment || $payment->status !== 'pending') {
+            return response('OK');
+        }
+
+        try {
+            $result = app(MtnMomoService::class)->checkStatus($referenceId);
+            $mtnStatus = $result['status'] ?? 'PENDING';
+
+            if ($mtnStatus === 'SUCCESSFUL') {
+                $this->applySuccessfulPayment($payment, 'mtn_money');
+            } elseif ($mtnStatus === 'FAILED') {
+                $payment->update(['status' => 'failed']);
+            }
+        } catch (RuntimeException $e) {
+            // swallow — polling remains the source of truth
         }
 
         return response('OK');
