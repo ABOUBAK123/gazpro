@@ -107,7 +107,12 @@
                                             </div>
                                         </div>
                                     @else
-                                        <span class="text-xs text-gray-400">—</span>
+                                        <form action="{{ route('admin.stores.generate_qr', $store) }}" method="POST">
+                                            @csrf @method('PATCH')
+                                            <button type="submit" class="text-xs text-blue-600 hover:underline">
+                                                <i class="fas fa-qrcode"></i> Générer le QR
+                                            </button>
+                                        </form>
                                     @endif
                                 </td>
                             </tr>

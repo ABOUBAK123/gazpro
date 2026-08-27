@@ -65,6 +65,18 @@ class AdminController extends Controller
         return back()->with('success', "Le magasin \"{$store->store_name}\" a été approuvé.");
     }
 
+    public function generateStoreQr(Store $store, StoreQrService $qrService)
+    {
+        if (!$store->qr_token) {
+            $store->qr_token = (string) Str::uuid();
+            $store->save();
+        }
+
+        $qrService->generate($store);
+
+        return back()->with('success', "QR code généré pour \"{$store->store_name}\".");
+    }
+
     public function rejectStore(Store $store)
     {
         $store->update(['status' => 'rejected']);

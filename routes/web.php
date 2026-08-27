@@ -85,6 +85,7 @@ Route::middleware(\App\Http\Middleware\AuthenticateAdmin::class)->prefix('admin'
     Route::get('/inscriptions', [AdminController::class, 'inscriptions'])->name('inscriptions');
     Route::patch('/stores/{store}/approve', [AdminController::class, 'approveStore'])->name('stores.approve');
     Route::patch('/stores/{store}/reject',  [AdminController::class, 'rejectStore'])->name('stores.reject');
+    Route::patch('/stores/{store}/generate-qr', [AdminController::class, 'generateStoreQr'])->name('stores.generate_qr');
     Route::get('/currencies',              [AdminController::class, 'currencies'])->name('currencies');
     Route::post('/currencies',             [AdminController::class, 'storeCurrency'])->name('currencies.store');
     Route::put('/currencies/{currency}',   [AdminController::class, 'updateCurrency'])->name('currencies.update');
