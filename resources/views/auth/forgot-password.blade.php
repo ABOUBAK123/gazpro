@@ -39,6 +39,11 @@
         <i class="fas fa-check-circle"></i><span>{{ session('success') }}</span>
     </div>
     @endif
+    @if(session('error'))
+    <div class="flex items-center gap-3 bg-red-500/20 border border-red-400/30 text-red-200 rounded-xl px-4 py-3 mb-4 text-sm backdrop-blur">
+        <i class="fas fa-exclamation-circle"></i><span>{{ session('error') }}</span>
+    </div>
+    @endif
 
     <div class="bg-white rounded-3xl shadow-2xl overflow-hidden">
         <div class="px-7 pt-6 pb-4">

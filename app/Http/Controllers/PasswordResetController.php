@@ -67,12 +67,8 @@ class PasswordResetController extends Controller
 
         $found = $this->findAccount($request->email);
 
-        // Always show the same message, whether the email exists or not,
-        // to avoid leaking which emails are registered.
-        $genericMessage = 'Si un compte existe avec cet email, un lien de réinitialisation vient de vous être envoyé.';
-
         if (!$found) {
-            return back()->with('success', $genericMessage);
+            return back()->with('error', "Cet email n'est rattaché à aucun compte.");
         }
 
         [$account, $actorType] = $found;
@@ -101,11 +97,10 @@ class PasswordResetController extends Controller
                 }
             );
         } catch (\Throwable $e) {
-            // Swallow mail delivery failures — don't leak account existence via error state,
-            // and the admin's SMTP config may simply not be set up yet.
+            return back()->with('error', "Impossible d'envoyer l'email pour le moment. Réessayez plus tard.");
         }
 
-        return back()->with('success', $genericMessage);
+        return back()->with('success', 'Un lien de réinitialisation vient de vous être envoyé dans votre email.');
     }
 
     public function showResetForm(Request $request, string $token)
