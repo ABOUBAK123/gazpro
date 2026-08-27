@@ -165,4 +165,30 @@ class AdminSettingsController extends Controller
 
         return back()->with('success', 'Configuration email sauvegardée.');
     }
+
+    public function testEmailConfig(Request $request)
+    {
+        $request->validate([
+            'test_email' => 'required|email',
+        ], [
+            'test_email.required' => 'Entrez une adresse email pour le test.',
+            'test_email.email'    => 'Email invalide.',
+        ]);
+
+        \App\Services\MailConfigService::apply();
+
+        try {
+            \Illuminate\Support\Facades\Mail::raw(
+                "Ceci est un email de test envoyé depuis la configuration SMTP de GazManager.\n\n" .
+                "Si vous recevez cet email, votre configuration est fonctionnelle.",
+                function ($message) use ($request) {
+                    $message->to($request->test_email)->subject('Test de configuration email — GazManager');
+                }
+            );
+        } catch (\Throwable $e) {
+            return back()->with('error', "Échec de l'envoi : " . $e->getMessage());
+        }
+
+        return back()->with('success', "Email de test envoyé à {$request->test_email}.");
+    }
 }

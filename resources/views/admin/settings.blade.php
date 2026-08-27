@@ -201,6 +201,22 @@
                 </div>
             </form>
         </div>
+
+        {{-- Tester l'envoi --}}
+        <div class="card max-w-2xl mt-6">
+            <h3 class="font-semibold text-gray-800 mb-1"><i class="fas fa-paper-plane text-purple-500 mr-2"></i>Tester l'envoi</h3>
+            <p class="text-sm text-gray-500 mb-5">Envoie un email de test avec la configuration enregistrée ci-dessus (pense à sauvegarder d'abord tes changements).</p>
+            <form action="{{ route('admin.settings.email.test') }}" method="POST" class="flex flex-col sm:flex-row items-start sm:items-end gap-3">
+                @csrf
+                <div class="flex-1 w-full">
+                    <label class="form-label">Adresse email de test</label>
+                    <input type="email" name="test_email" required placeholder="vous@email.com" class="form-input">
+                </div>
+                <button type="submit" class="btn btn-secondary whitespace-nowrap">
+                    <i class="fas fa-paper-plane mr-1"></i> Envoyer un test
+                </button>
+            </form>
+        </div>
     </div>
 
     {{-- Contact --}}

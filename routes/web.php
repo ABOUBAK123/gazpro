@@ -145,6 +145,7 @@ Route::middleware(\App\Http\Middleware\AuthenticateAdmin::class)->prefix('admin'
     Route::delete('/parametres/weights',   [AdminSettingsController::class, 'deleteWeight'])->name('settings.weight.delete');
     Route::post('/parametres/terms',         [AdminSettingsController::class, 'saveTerms'])->name('settings.terms');
     Route::post('/parametres/email',         [AdminSettingsController::class, 'saveEmailConfig'])->name('settings.email');
+    Route::post('/parametres/email/test',    [AdminSettingsController::class, 'testEmailConfig'])->name('settings.email.test');
     Route::post('/parametres/delivery-fee', [AdminSettingsController::class, 'saveDeliveryFee'])->name('settings.delivery_fee');
     Route::post('/parametres/contact',      [AdminSettingsController::class, 'saveContact'])->name('settings.contact');
 

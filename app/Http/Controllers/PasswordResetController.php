@@ -32,25 +32,6 @@ class PasswordResetController extends Controller
         return null;
     }
 
-    private function applyMailConfig(): void
-    {
-        $config = AppSetting::get('email_config', []);
-        if (empty($config['host'])) {
-            return; // fall back to .env defaults (log driver in dev)
-        }
-
-        config([
-            'mail.default'                  => 'smtp',
-            'mail.mailers.smtp.host'        => $config['host'],
-            'mail.mailers.smtp.port'        => $config['port'] ?? 587,
-            'mail.mailers.smtp.username'    => $config['username'] ?? null,
-            'mail.mailers.smtp.password'    => $config['password'] ?? null,
-            'mail.mailers.smtp.encryption'  => ($config['encryption'] ?? 'tls') === 'none' ? null : $config['encryption'],
-            'mail.from.address'             => $config['from_email'] ?? config('mail.from.address'),
-            'mail.from.name'                => $config['from_name'] ?? config('mail.from.name'),
-        ]);
-    }
-
     public function showForgotPassword()
     {
         return view('auth.forgot-password');
@@ -85,7 +66,7 @@ class PasswordResetController extends Controller
 
         $resetUrl = route('password.reset.form', ['token' => $token, 'email' => $request->email]);
 
-        $this->applyMailConfig();
+        \App\Services\MailConfigService::apply();
 
         try {
             Mail::raw(
