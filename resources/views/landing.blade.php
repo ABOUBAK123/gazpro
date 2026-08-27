@@ -22,6 +22,10 @@
             </div>
             <div class="flex items-center gap-3">
                 <a href="{{ route('login') }}" class="text-sm text-blue-100 hover:text-white transition">Se connecter</a>
+                <a href="{{ route('register.commissionnaire.show') }}"
+                   class="hidden sm:inline text-sm text-blue-100 hover:text-white transition">
+                    <i class="fas fa-handshake mr-1"></i>Devenir commissionnaire
+                </a>
                 <a href="{{ route('register') }}"
                    class="bg-white text-blue-800 text-sm font-semibold px-4 py-2 rounded-xl hover:bg-blue-50 transition">
                     Inscrire mon magasin
@@ -91,6 +95,26 @@
         <p class="text-center text-xs text-gray-400 mt-8">
             Après votre inscription, votre compte est validé sous 24h par notre équipe.
         </p>
+    </div>
+
+    {{-- Commissionnaire CTA --}}
+    <div class="max-w-5xl mx-auto px-6 pb-16">
+        <div class="rounded-3xl p-8 sm:p-10 text-center text-white shadow-xl"
+             style="background:linear-gradient(135deg,#0f172a 0%,#1e3a8a 50%,#1d4ed8 100%);">
+            <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl mb-4 shadow-lg"
+                 style="background:linear-gradient(135deg,#fbbf24,#f59e0b);">
+                <i class="fas fa-handshake text-2xl" style="color:#1e3a8a;"></i>
+            </div>
+            <h2 class="text-2xl sm:text-3xl font-black mb-3">Gagnez de l'argent en parrainant des magasins</h2>
+            <p class="text-blue-100 text-base mb-6 max-w-xl mx-auto">
+                Devenez commissionnaire GazManager : touchez <strong class="text-white">3% de commission</strong> sur chaque abonnement
+                (et chaque réabonnement) des magasins que vous parrainez, avec retrait automatique via Mobile Money.
+            </p>
+            <a href="{{ route('register.commissionnaire.show') }}"
+               class="inline-flex items-center gap-2 bg-amber-400 text-blue-900 font-bold px-6 py-3 rounded-2xl shadow-xl hover:bg-amber-300 transition">
+                <i class="fas fa-handshake"></i> Devenir commissionnaire
+            </a>
+        </div>
     </div>
 
     @include('partials.contact-footer', ['footerDark' => false])
