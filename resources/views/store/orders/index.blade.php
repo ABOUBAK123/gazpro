@@ -3,19 +3,19 @@
 
 @section('content')
 @php
-$livreursJson = $livreurs->map(function($l) {
-    return [
-        'id'            => $l->id,
-        'name'          => $l->name,
-        'initial'       => strtoupper(substr($l->name, 0, 1)),
-        'vehicle_type'  => $l->vehicle_type,
-        'vehicle_icon'  => $l->vehicle_icon,
-        'vehicle_label' => $l->vehicle_label,
-        'distance_km'   => $l->distance_km,
-        'is_available'  => (bool)$l->is_available,
-        'active_count'  => (int)$l->active_count,
-    ];
-})->values();
+$mapLivreur = fn($l) => [
+    'id'            => $l->id,
+    'name'          => $l->name,
+    'initial'       => strtoupper(substr($l->name, 0, 1)),
+    'vehicle_type'  => $l->vehicle_type,
+    'vehicle_icon'  => $l->vehicle_icon,
+    'vehicle_label' => $l->vehicle_label,
+    'distance_km'   => $l->distance_km,
+    'is_available'  => (bool) $l->is_available,
+    'active_count'  => (int) $l->active_count,
+];
+$livreursNearestJson = $livreursNearest->map($mapLivreur)->values();
+$livreursAllJson     = $livreursAll->map($mapLivreur)->values();
 @endphp
 @push('scripts')
 <script>
@@ -25,17 +25,21 @@ function ordersPage() {
         assignOrderDesc: '',
         selectedLivreur: null,
         vehicleFilter:   'all',
-        livreurs: @json($livreursJson),
+        showAll:         false,
+        livreursNearest: @json($livreursNearestJson),
+        livreursAll:     @json($livreursAllJson),
 
         get filteredLivreurs() {
-            if (this.vehicleFilter === 'all') return this.livreurs;
-            return this.livreurs.filter(l => l.vehicle_type === this.vehicleFilter);
+            const list = this.showAll ? this.livreursAll : this.livreursNearest;
+            if (this.vehicleFilter === 'all') return list;
+            return list.filter(l => l.vehicle_type === this.vehicleFilter);
         },
         openAssign(orderId, desc) {
             this.assignOrderId   = orderId;
             this.assignOrderDesc = desc;
             this.selectedLivreur = null;
             this.vehicleFilter   = 'all';
+            this.showAll         = false;
         },
         submitAssign() {
             if (!this.selectedLivreur || !this.assignOrderId) return;
@@ -66,6 +70,39 @@ function ordersPage() {
     @csrf @method('PATCH')
     <input type="hidden" name="status" value="confirmed">
 </form>
+
+    {{-- GPS activation banner --}}
+    @if(!$store->latitude || !$store->longitude)
+    <div x-data="{ status: 'idle' }"
+         class="flex items-center gap-3 bg-amber-50 border border-amber-200 text-amber-800 rounded-xl px-4 py-3 text-sm">
+        <i class="fas fa-location-dot"></i>
+        <span class="flex-1">
+            Position du magasin non activée — impossible de trouver les livreurs les plus proches sans elle.
+        </span>
+        <button type="button" @click="
+                status = 'loading';
+                navigator.geolocation.getCurrentPosition(
+                    async (pos) => {
+                        await fetch('{{ route('profile.position') }}', {
+                            method: 'PATCH',
+                            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content },
+                            body: JSON.stringify({ latitude: pos.coords.latitude, longitude: pos.coords.longitude }),
+                        });
+                        status = 'done';
+                        location.reload();
+                    },
+                    () => { status = 'error'; },
+                    { enableHighAccuracy: true, timeout: 10000 }
+                );
+            "
+            :disabled="status === 'loading'"
+            class="btn btn-warning shrink-0 disabled:opacity-60">
+            <i class="fas" :class="status === 'loading' ? 'fa-spinner fa-spin' : 'fa-location-crosshairs'"></i>
+            <span x-text="status === 'loading' ? 'Localisation…' : 'Activer la position'"></span>
+        </button>
+        <p x-show="status === 'error'" class="text-red-600 text-xs">Localisation refusée ou indisponible.</p>
+    </div>
+    @endif
 
     {{-- Filters --}}
     <div class="flex flex-wrap items-center justify-between gap-4">
@@ -282,8 +319,20 @@ function ordersPage() {
                 </button>
             </div>
 
+            {{-- Nearest / all toggle --}}
+            <div class="px-6 pt-4 flex items-center justify-between shrink-0">
+                <span class="inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-lg"
+                      :class="showAll ? 'bg-gray-100 text-gray-600' : 'bg-blue-50 text-blue-700'">
+                    <i class="fas" :class="showAll ? 'fa-list' : 'fa-location-crosshairs'"></i>
+                    <span x-text="showAll ? 'Tous les livreurs' : '3 livreurs les plus proches du magasin'"></span>
+                </span>
+                <button @click="showAll = !showAll" class="text-xs text-blue-600 hover:underline font-semibold">
+                    <span x-text="showAll ? 'Voir seulement les plus proches' : 'Voir tous les livreurs'"></span>
+                </button>
+            </div>
+
             {{-- Vehicle filter chips --}}
-            <div class="px-6 pt-4 pb-3 flex gap-2 flex-wrap shrink-0 border-b border-gray-100">
+            <div class="px-6 pt-3 pb-3 flex gap-2 flex-wrap shrink-0 border-b border-gray-100">
                 <span class="text-xs text-gray-400 font-semibold self-center mr-1">Véhicule :</span>
                 <template x-for="[val,label] in [['all','Tous'],['moto','🏍️ Moto'],['tricycle','🛺 Tricycle'],['voiture','🚗 Voiture']]" :key="val">
                     <button @click="vehicleFilter = val"

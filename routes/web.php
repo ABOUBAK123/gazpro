@@ -180,6 +180,7 @@ Route::middleware(\App\Http\Middleware\AuthenticateStore::class)->group(function
     Route::put('/profil/parametres',       [ProfileController::class, 'update'])->name('profile.update');
     Route::get('/profil/livraison',        [ProfileController::class, 'deliverySettings'])->name('profile.delivery');
     Route::put('/profil/livraison',        [ProfileController::class, 'updateDelivery'])->name('profile.delivery.update');
+    Route::patch('/profil/position',       [ProfileController::class, 'updateStoreLocation'])->name('profile.position');
 
     // Profit
     Route::get('/benefices', [ProfitController::class, 'index'])->name('profit.index');

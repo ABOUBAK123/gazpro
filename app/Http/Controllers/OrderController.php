@@ -34,9 +34,10 @@ class OrderController extends Controller
             $query->where('client_name', 'like', '%' . $request->search . '%');
         }
 
-        $orders   = $query->paginate(20);
-        $livreurs = LivreurController::livreursSortedByDistance($store);
-        return view('store.orders.index', compact('store', 'orders', 'livreurs'));
+        $orders         = $query->paginate(20);
+        $livreursAll    = LivreurController::livreursSortedByDistance($store);
+        $livreursNearest = LivreurController::livreursSortedByDistance($store, 3);
+        return view('store.orders.index', compact('store', 'orders', 'livreursAll', 'livreursNearest'));
     }
 
     public function create()

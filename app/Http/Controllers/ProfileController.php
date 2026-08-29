@@ -14,6 +14,31 @@ class ProfileController extends Controller
         return Auth::guard('store')->user() ?? Auth::guard('staff')->user();
     }
 
+    private function currentStore()
+    {
+        if (Auth::guard('store')->check()) {
+            return Auth::guard('store')->user();
+        }
+        return Auth::guard('staff')->user()->store;
+    }
+
+    // Lets a store manager/staff activate the store's own GPS position, used
+    // to find the nearest livreurs when assigning an order (Order::index()).
+    public function updateStoreLocation(Request $request)
+    {
+        $request->validate([
+            'latitude'  => 'required|numeric|between:-90,90',
+            'longitude' => 'required|numeric|between:-180,180',
+        ]);
+
+        $this->currentStore()->update([
+            'latitude'  => $request->latitude,
+            'longitude' => $request->longitude,
+        ]);
+
+        return response()->json(['status' => 'ok']);
+    }
+
     public function index()
     {
         $user = $this->currentUser();

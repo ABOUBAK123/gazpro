@@ -28,8 +28,10 @@ class LivreurController extends Controller
         return $R * 2 * atan2(sqrt($a), sqrt(1 - $a));
     }
 
-    // Returns active+available livreurs sorted by distance to the given store
-    public static function livreursSortedByDistance(Store $store): \Illuminate\Support\Collection
+    // Returns active livreurs sorted by distance to the given store
+    // (available + GPS-tracked first, then available without GPS, then busy).
+    // Pass $limit to cap the result — e.g. the 3 nearest for order assignment.
+    public static function livreursSortedByDistance(Store $store, ?int $limit = null): \Illuminate\Support\Collection
     {
         $livreurs = Livreur::where('status', 'active')
             ->withCount([
@@ -40,7 +42,7 @@ class LivreurController extends Controller
         $storeLat = $store->latitude;
         $storeLng = $store->longitude;
 
-        return $livreurs->map(function (Livreur $l) use ($storeLat, $storeLng) {
+        $sorted = $livreurs->map(function (Livreur $l) use ($storeLat, $storeLng) {
             if ($storeLat && $storeLng && $l->latitude && $l->longitude) {
                 $R   = 6371;
                 $dLat = deg2rad($l->latitude - $storeLat);
@@ -58,6 +60,8 @@ class LivreurController extends Controller
             $hasGps    = $l->distance_km !== null ? 0 : 1;
             return [$available, $hasGps, $l->distance_km ?? PHP_INT_MAX];
         })->values();
+
+        return $limit ? $sorted->take($limit)->values() : $sorted;
     }
 
     // ── Order assignment ───────────────────────────────────────────────────
