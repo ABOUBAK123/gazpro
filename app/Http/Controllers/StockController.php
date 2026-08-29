@@ -23,12 +23,19 @@ class StockController extends Controller
         $store = $this->currentStore();
         $stocks = $store->stock()->orderBy('brand')->orderBy('weight')->get();
 
-        $brands = collect(AppSetting::get('brands', []))
+        // Same defaults as admin/settings.blade.php's "Marques & Poids" tab,
+        // so the dropdown isn't empty before an admin has explicitly saved
+        // a custom list there.
+        $brands = collect(AppSetting::get('brands', ['Total', 'Shell', 'Oryx', 'Sodigaz', 'Petrogaz']))
             ->map(fn($b) => is_string($b) ? $b : ($b['name'] ?? null))
             ->filter()
             ->values();
 
-        $weights = collect(AppSetting::get('weights', []))
+        $weights = collect(AppSetting::get('weights', [
+                ['value' => '6kg',  'code' => 'B6'],
+                ['value' => '12kg', 'code' => 'B12'],
+                ['value' => '25kg', 'code' => 'B25'],
+            ]))
             ->map(fn($w) => is_string($w) ? $w : ($w['value'] ?? null))
             ->filter()
             ->values();
