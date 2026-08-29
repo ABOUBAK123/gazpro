@@ -70,6 +70,10 @@
                class="nav-item {{ request()->routeIs('admin.subscription*') ? 'active' : '' }}">
                 <i class="fas fa-credit-card"></i>Abonnement
             </a>
+            <a href="{{ route('admin.payments') }}"
+               class="nav-item {{ request()->routeIs('admin.payments') ? 'active' : '' }}">
+                <i class="fas fa-receipt"></i>Paiements
+            </a>
             <a href="{{ route('admin.livreurs.index') }}"
                class="nav-item {{ request()->routeIs('admin.livreurs.*') ? 'active' : '' }}">
                 <i class="fas fa-motorcycle"></i>Livreurs

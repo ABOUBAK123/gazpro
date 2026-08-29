@@ -21,6 +21,7 @@ use App\Http\Controllers\AppDownloadController;
 use App\Http\Controllers\LandingController;
 use App\Http\Controllers\CommissionnaireController;
 use App\Http\Controllers\AdminCommissionnaireController;
+use App\Http\Controllers\AdminPaymentController;
 use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\ProfileController;
@@ -96,6 +97,7 @@ Route::middleware(\App\Http\Middleware\AuthenticateStore::class)
 // Admin routes
 Route::middleware(\App\Http\Middleware\AuthenticateAdmin::class)->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard',    [AdminController::class, 'dashboard'])->name('dashboard');
+    Route::get('/paiements',    [AdminPaymentController::class, 'index'])->name('payments');
     Route::get('/inscriptions', [AdminController::class, 'inscriptions'])->name('inscriptions');
     Route::patch('/stores/{store}/approve', [AdminController::class, 'approveStore'])->name('stores.approve');
     Route::patch('/stores/{store}/reject',  [AdminController::class, 'rejectStore'])->name('stores.reject');
