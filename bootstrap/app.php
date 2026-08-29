@@ -18,8 +18,9 @@ return Application::configure(basePath: dirname(__DIR__))
             '/api/*',
         ]);
         $middleware->alias([
-            'auth.admin' => \App\Http\Middleware\AuthenticateAdmin::class,
-            'auth.store' => \App\Http\Middleware\AuthenticateStore::class,
+            'auth.admin'  => \App\Http\Middleware\AuthenticateAdmin::class,
+            'auth.store'  => \App\Http\Middleware\AuthenticateStore::class,
+            'auth.mobile' => \App\Http\Middleware\AuthenticateMobileUser::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

@@ -176,7 +176,7 @@ class AdminController extends Controller
     public function uploadPaymentLogos(Request $request)
     {
         $request->validate([
-            'logos.*' => 'nullable|image|mimes:png,jpg,jpeg,svg,webp|max:512',
+            'logos.*' => 'nullable|image|mimes:png,jpg,jpeg,webp|max:512',
         ]);
 
         $providers = ['orange_money', 'mtn_money', 'wave', 'moov_money', 'visa_card'];

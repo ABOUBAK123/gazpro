@@ -9,6 +9,7 @@ use App\Models\MobileUser;
 use App\Models\Store;
 use App\Models\Stock;
 use App\Models\Order;
+use Illuminate\Validation\ValidationException;
 
 class MobileApiController extends Controller
 {
@@ -122,29 +123,39 @@ class MobileApiController extends Controller
 
     public function createOrder(Request $request)
     {
+        /** @var MobileUser $mobileUser */
+        $mobileUser = $request->attributes->get('mobileUser');
+
         $data = $request->validate([
             'storeId'         => 'required|exists:stores,id',
             'brand'           => 'required|string',
             'weight'          => 'required|string',
             'quantity'        => 'required|integer|min:1',
-            'unitPrice'       => 'required|numeric|min:0',
-            'totalPrice'      => 'required|numeric|min:0',
             'deliveryAddress' => 'required|string',
-            'clientName'      => 'required|string',
-            'clientPhone'     => 'required|string',
             'note'            => 'nullable|string',
         ]);
 
+        $stock = Stock::where('store_id', $data['storeId'])
+            ->where('brand', $data['brand'])
+            ->where('weight', $data['weight'])
+            ->first();
+
+        if (!$stock || $stock->quantity < $data['quantity']) {
+            throw ValidationException::withMessages(['quantity' => 'Stock insuffisant pour cette commande.']);
+        }
+
+        // Price and client identity are always derived server-side (stock
+        // price, authenticated mobile user) — never trusted from the request.
         $order = Order::create([
             'store_id'       => $data['storeId'],
-            'client_name'    => $data['clientName'],
-            'client_phone'   => $data['clientPhone'],
+            'client_name'    => $mobileUser->name,
+            'client_phone'   => $mobileUser->phone,
             'client_address' => $data['deliveryAddress'],
             'brand'          => $data['brand'],
             'weight'         => $data['weight'],
             'quantity'       => $data['quantity'],
-            'unit_price'     => $data['unitPrice'],
-            'total_price'    => $data['totalPrice'],
+            'unit_price'     => $stock->unit_price,
+            'total_price'    => $stock->unit_price * $data['quantity'],
             'currency'       => 'XOF',
             'status'         => 'pending',
             'notes'          => $data['note'] ?? null,
@@ -153,8 +164,12 @@ class MobileApiController extends Controller
         return response()->json(['data' => $this->formatOrder($order)], 201);
     }
 
-    public function myOrders(string $phone)
+    public function myOrders(Request $request, string $phone)
     {
+        /** @var MobileUser $mobileUser */
+        $mobileUser = $request->attributes->get('mobileUser');
+        abort_unless($phone === $mobileUser->phone, 403);
+
         $orders = Order::where('client_phone', $phone)
             ->orderByDesc('created_at')
             ->get()

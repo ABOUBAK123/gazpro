@@ -61,7 +61,7 @@ Route::patch('/livreur/{token}/commandes/{order}/statut',  [LivreurController::c
 
 // Public client order form
 Route::get('/commander',  [OrderController::class, 'clientForm'])->name('client.order');
-Route::post('/commander', [OrderController::class, 'clientStore'])->name('client.order.store');
+Route::post('/commander', [OrderController::class, 'clientStore'])->middleware('throttle:10,1')->name('client.order.store');
 
 // Public store app download page (linked from the store's QR code)
 Route::get('/app/{store:qr_token}', [AppDownloadController::class, 'show'])->name('app.download');
@@ -72,17 +72,19 @@ Route::get('/api/stock',  [ClientController::class, 'getStockApi']);
 
 // ─── Mobile App API ───────────────────────────────────────────────────────
 Route::prefix('api')->name('api.')->group(function () {
-    // Auth (public)
-    Route::post('/auth/register', [MobileApiController::class, 'register'])->name('auth.register');
-    Route::post('/auth/login',    [MobileApiController::class, 'login'])->name('auth.login');
+    // Auth (public, rate-limited against brute force)
+    Route::post('/auth/register', [MobileApiController::class, 'register'])->middleware('throttle:10,1')->name('auth.register');
+    Route::post('/auth/login',    [MobileApiController::class, 'login'])->middleware('throttle:5,1')->name('auth.login');
 
-    // Stores (public)
+    // Stores (public — read-only, non-sensitive)
     Route::get('/stores',        [MobileApiController::class, 'stores'])->name('stores.index');
     Route::get('/stores/{id}',   [MobileApiController::class, 'storeDetail'])->name('stores.show');
 
-    // Orders (public — identified by phone)
-    Route::post('/orders',               [MobileApiController::class, 'createOrder'])->name('orders.store');
-    Route::get('/orders/client/{phone}', [MobileApiController::class, 'myOrders'])->name('orders.client');
+    // Orders (require a valid mobile user Bearer token)
+    Route::middleware('auth.mobile')->group(function () {
+        Route::post('/orders',               [MobileApiController::class, 'createOrder'])->name('orders.store');
+        Route::get('/orders/client/{phone}', [MobileApiController::class, 'myOrders'])->name('orders.client');
+    });
 
     // Livreur Flutter app API (token-based)
     Route::get('/livreur/{token}',                            [LivreurController::class, 'apiData'])->name('livreur.api.data');
