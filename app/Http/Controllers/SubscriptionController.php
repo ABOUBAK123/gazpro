@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use App\Models\Store;
@@ -131,12 +132,28 @@ class SubscriptionController extends Controller
 
         if ($status === 'ACCEPTED') {
             $method = $result['data']['payment_method'] ?? 'cinetpay';
-            $this->applySuccessfulPayment($payment, $method);
+            $this->applyOnce($payment->id, $method);
         } else {
             $payment->update(['status' => 'failed']);
         }
 
         return response('OK');
+    }
+
+    /**
+     * Locks the Payment row and re-checks its status before crediting, so two
+     * concurrent confirmations of the same payment (webhook retry racing the
+     * browser poll, or a duplicate gateway callback) can't both pass the
+     * "not yet completed" check and double-credit the subscription/commission.
+     */
+    private function applyOnce(int $paymentId, string $paymentMethod): void
+    {
+        DB::transaction(function () use ($paymentId, $paymentMethod) {
+            $payment = Payment::where('id', $paymentId)->lockForUpdate()->first();
+            if ($payment && $payment->status !== 'completed') {
+                $this->applySuccessfulPayment($payment, $paymentMethod);
+            }
+        });
     }
 
     private function applySuccessfulPayment(Payment $payment, string $paymentMethod): void
@@ -222,7 +239,7 @@ class SubscriptionController extends Controller
         $mtnStatus = $result['status'] ?? 'PENDING';
 
         if ($mtnStatus === 'SUCCESSFUL') {
-            $this->applySuccessfulPayment($payment, 'mtn_money');
+            $this->applyOnce($payment->id, 'mtn_money');
             return response()->json(['status' => 'completed']);
         }
 
@@ -252,7 +269,7 @@ class SubscriptionController extends Controller
             $mtnStatus = $result['status'] ?? 'PENDING';
 
             if ($mtnStatus === 'SUCCESSFUL') {
-                $this->applySuccessfulPayment($payment, 'mtn_money');
+                $this->applyOnce($payment->id, 'mtn_money');
             } elseif ($mtnStatus === 'FAILED') {
                 $payment->update(['status' => 'failed']);
             }

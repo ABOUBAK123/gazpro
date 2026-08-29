@@ -159,7 +159,10 @@ class AdminController extends Controller
             $providerData['active'] = $request->boolean("provider_{$key}_active");
 
             foreach ($request->input("provider_{$key}", []) as $field => $value) {
-                if ($field !== 'active') {
+                // Skip blank submissions so re-saving the form (secret fields are
+                // never re-echoed, see admin/subscription.blade.php) doesn't wipe
+                // out an already-configured credential.
+                if ($field !== 'active' && trim((string) $value) !== '') {
                     $providerData[$field] = $value;
                 }
             }

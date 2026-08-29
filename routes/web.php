@@ -41,17 +41,17 @@ Route::post('/abonnement/mtn/notify', [SubscriptionController::class, 'notifyMtn
 
 // Auth routes
 Route::get('/login',     [AuthController::class, 'showLogin'])->name('login');
-Route::post('/login',    [AuthController::class, 'login']);
+Route::post('/login',    [AuthController::class, 'login'])->middleware('throttle:5,1');
 Route::get('/register',  [AuthController::class, 'showRegister'])->name('register');
-Route::post('/register', [AuthController::class, 'register']);
+Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:10,1');
 Route::get('/inscription-commissionnaire',  [AuthController::class, 'showRegisterCommissionnaire'])->name('register.commissionnaire.show');
-Route::post('/inscription-commissionnaire', [AuthController::class, 'registerCommissionnaire'])->name('register.commissionnaire');
+Route::post('/inscription-commissionnaire', [AuthController::class, 'registerCommissionnaire'])->middleware('throttle:10,1')->name('register.commissionnaire');
 Route::post('/logout',   [AuthController::class, 'logout'])->name('logout');
 
 Route::get('/mot-de-passe-oublie',  [PasswordResetController::class, 'showForgotPassword'])->name('password.forgot');
-Route::post('/mot-de-passe-oublie', [PasswordResetController::class, 'sendResetLink'])->name('password.forgot.send');
+Route::post('/mot-de-passe-oublie', [PasswordResetController::class, 'sendResetLink'])->middleware('throttle:5,1')->name('password.forgot.send');
 Route::get('/reinitialiser-mot-de-passe/{token}',  [PasswordResetController::class, 'showResetForm'])->name('password.reset.form');
-Route::post('/reinitialiser-mot-de-passe',         [PasswordResetController::class, 'reset'])->name('password.reset');
+Route::post('/reinitialiser-mot-de-passe',         [PasswordResetController::class, 'reset'])->middleware('throttle:5,1')->name('password.reset');
 
 // Livreur mobile app (public, token-based)
 Route::get('/livreur/{token}',                             [LivreurController::class, 'mobileApp'])->name('livreur.app');

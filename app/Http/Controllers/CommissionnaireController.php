@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use App\Models\CommissionTransaction;
 use App\Models\Commissionnaire;
 use App\Services\MtnMomoDisbursementService;
@@ -55,21 +56,34 @@ class CommissionnaireController extends Controller
             'amount.min' => 'Le montant minimum de retrait est de ' . self::MIN_WITHDRAWAL . ' XOF.',
         ]);
 
-        if ($request->amount > $commissionnaire->balance) {
-            return response()->json(['error' => 'Solde insuffisant.'], 422);
+        // Lock the commissionnaire row for the balance check + debit so two
+        // concurrent withdrawal requests can't both read the same balance and
+        // both pass the sufficiency check (TOCTOU double-spend). The lock is
+        // held only for this fast DB-only block, released before the slow
+        // external disbursement API call below.
+        try {
+            $transaction = DB::transaction(function () use ($commissionnaire, $request) {
+                $locked = Commissionnaire::where('id', $commissionnaire->id)->lockForUpdate()->first();
+
+                if ($request->amount > $locked->balance) {
+                    throw new RuntimeException('Solde insuffisant.');
+                }
+
+                $transaction = CommissionTransaction::create([
+                    'commissionnaire_id' => $locked->id,
+                    'type'                => 'withdrawal',
+                    'amount'              => $request->amount,
+                    'status'              => 'pending',
+                    'phone'               => $request->phone,
+                ]);
+
+                $locked->decrement('balance', $request->amount);
+
+                return $transaction;
+            });
+        } catch (RuntimeException $e) {
+            return response()->json(['error' => $e->getMessage()], 422);
         }
-
-        $transaction = CommissionTransaction::create([
-            'commissionnaire_id' => $commissionnaire->id,
-            'type'                => 'withdrawal',
-            'amount'              => $request->amount,
-            'status'              => 'pending',
-            'phone'               => $request->phone,
-        ]);
-
-        // Debit immediately to prevent double-withdrawal from concurrent requests;
-        // refunded automatically if the transfer is later confirmed FAILED.
-        $commissionnaire->decrement('balance', $request->amount);
 
         try {
             $referenceId = $disbursement->transfer(

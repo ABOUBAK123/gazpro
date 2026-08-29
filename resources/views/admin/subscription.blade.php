@@ -28,7 +28,7 @@
             'border'  => '#FFE680',
             'icon'    => 'fas fa-mobile-alt',
             'fields'  => [
-                'subscription_key'   => ['label' => 'Subscription Key', 'type' => 'text'],
+                'subscription_key'   => ['label' => 'Subscription Key', 'type' => 'password'],
                 'api_user'           => ['label' => 'API User (UUID)', 'type' => 'text'],
                 'api_key'            => ['label' => 'API Key', 'type' => 'password'],
                 'target_environment' => ['label' => 'Environnement', 'type' => 'text', 'placeholder' => 'sandbox ou production'],
@@ -117,8 +117,8 @@
                     <label class="form-label">API Key</label>
                     <div class="relative">
                         <input :type="showApiKey ? 'text' : 'password'" name="cinetpay_api_key"
-                               value="{{ $cpApiKey }}" class="form-input pr-10 font-mono text-sm"
-                               placeholder="Votre API Key CinetPay">
+                               value="" class="form-input pr-10 font-mono text-sm"
+                               placeholder="{{ $cpApiKey ? '•••••••• (déjà configuré — laisser vide pour ne pas changer)' : 'Votre API Key CinetPay' }}">
                         <button type="button" @click="showApiKey=!showApiKey"
                                 class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
                             <i :class="showApiKey ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
@@ -245,10 +245,15 @@
                         <div>
                             <label class="form-label text-xs">{{ $fieldDef['label'] }}</label>
                             <div class="relative">
+                                @php $isSecretField = $fieldDef['type'] === 'password'; @endphp
                                 <input type="{{ $fieldDef['type'] }}"
                                        name="provider_{{ $key }}[{{ $field }}]"
-                                       value="{{ $pd[$field] ?? '' }}"
-                                       @if(isset($fieldDef['placeholder'])) placeholder="{{ $fieldDef['placeholder'] }}" @endif
+                                       value="{{ $isSecretField ? '' : ($pd[$field] ?? '') }}"
+                                       @if($isSecretField && !empty($pd[$field]))
+                                           placeholder="•••••••• (déjà configuré — laisser vide pour ne pas changer)"
+                                       @elseif(isset($fieldDef['placeholder']))
+                                           placeholder="{{ $fieldDef['placeholder'] }}"
+                                       @endif
                                        class="form-input text-sm font-mono {{ $fieldDef['type'] === 'password' ? 'pr-10' : '' }}">
                                 @if($fieldDef['type'] === 'password')
                                 <button type="button"
@@ -359,7 +364,9 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                     <label class="form-label">Subscription Key</label>
-                    <input type="text" name="subscription_key" value="{{ $disb['subscription_key'] ?? '' }}" class="form-input font-mono text-sm">
+                    <input type="password" name="subscription_key" value=""
+                           placeholder="{{ !empty($disb['subscription_key']) ? '•••••••• (déjà configuré — laisser vide pour ne pas changer)' : '' }}"
+                           class="form-input font-mono text-sm">
                 </div>
                 <div>
                     <label class="form-label">API User (UUID)</label>
@@ -367,7 +374,9 @@
                 </div>
                 <div>
                     <label class="form-label">API Key</label>
-                    <input type="password" name="api_key" value="{{ $disb['api_key'] ?? '' }}" class="form-input font-mono text-sm">
+                    <input type="password" name="api_key" value=""
+                           placeholder="{{ !empty($disb['api_key']) ? '•••••••• (déjà configuré — laisser vide pour ne pas changer)' : '' }}"
+                           class="form-input font-mono text-sm">
                 </div>
                 <div>
                     <label class="form-label">Environnement</label>
