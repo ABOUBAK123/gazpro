@@ -29,12 +29,12 @@
             Téléchargez l'application mobile pour commander directement auprès de <strong>{{ $store->store_name }}</strong>.
         </p>
 
-        <button id="downloadBtn" data-token="{{ $clipboardToken }}" data-apk="{{ $apkUrl }}"
-                class="w-full bg-blue-600 hover:bg-blue-700 active:scale-[0.98] transition-all text-white font-semibold
-                       rounded-2xl py-4 px-6 flex items-center justify-center gap-2 shadow-lg shadow-blue-200">
+        <a id="downloadBtn" href="{{ $apkUrl }}" download data-token="{{ $clipboardToken }}"
+           class="w-full bg-blue-600 hover:bg-blue-700 active:scale-[0.98] transition-all text-white font-semibold
+                  rounded-2xl py-4 px-6 flex items-center justify-center gap-2 shadow-lg shadow-blue-200 no-underline">
             <i class="fas fa-download"></i>
             Télécharger l'application
-        </button>
+        </a>
 
         <p id="copyStatus" class="text-xs text-gray-400 mt-4 h-4"></p>
 
@@ -49,9 +49,15 @@
     @include('partials.contact-footer', ['footerDark' => false])
 
     <script>
+        // The download button is now a plain <a href download> link — the
+        // browser follows it natively on click/tap, which is far more
+        // reliable on mobile than triggering navigation from JS (that
+        // previous approach silently failed on some phones). This handler
+        // never calls preventDefault(): it only copies the store token as a
+        // background side-effect and must never block/delay the native
+        // download the browser is already handling on its own.
         document.getElementById('downloadBtn').addEventListener('click', function () {
             var token = this.dataset.token;
-            var apk = this.dataset.apk;
             var status = document.getElementById('copyStatus');
 
             function fallbackCopy(text) {
@@ -65,11 +71,6 @@
                 document.body.removeChild(ta);
             }
 
-            // Copy the store token in the background — never let this block or
-            // delay the download itself. On mobile, chaining the navigation
-            // inside the clipboard promise's .then() can lose the click's user
-            // gesture (or stall entirely), which is why "Télécharger" appeared
-            // to only copy the link without ever starting the APK download.
             if (navigator.clipboard && window.isSecureContext) {
                 navigator.clipboard.writeText(token).catch(function () {
                     fallbackCopy(token);
@@ -78,8 +79,7 @@
                 fallbackCopy(token);
             }
 
-            status.textContent = 'Téléchargement en cours...';
-            window.location.href = apk;
+            if (status) status.textContent = 'Téléchargement en cours...';
         });
     </script>
 </body>
