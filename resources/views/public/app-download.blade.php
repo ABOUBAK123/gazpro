@@ -65,20 +65,21 @@
                 document.body.removeChild(ta);
             }
 
-            function afterCopy() {
-                status.textContent = 'Prêt — téléchargement en cours...';
-                window.location.href = apk;
-            }
-
+            // Copy the store token in the background — never let this block or
+            // delay the download itself. On mobile, chaining the navigation
+            // inside the clipboard promise's .then() can lose the click's user
+            // gesture (or stall entirely), which is why "Télécharger" appeared
+            // to only copy the link without ever starting the APK download.
             if (navigator.clipboard && window.isSecureContext) {
-                navigator.clipboard.writeText(token).then(afterCopy).catch(function () {
+                navigator.clipboard.writeText(token).catch(function () {
                     fallbackCopy(token);
-                    afterCopy();
                 });
             } else {
                 fallbackCopy(token);
-                afterCopy();
             }
+
+            status.textContent = 'Téléchargement en cours...';
+            window.location.href = apk;
         });
     </script>
 </body>
