@@ -18,10 +18,20 @@ class StockController extends Controller
         return Auth::guard('staff')->user()->store;
     }
 
-    public function index()
+    public function index(Request $request)
     {
         $store = $this->currentStore();
-        $stocks = $store->stock()->orderBy('brand')->orderBy('weight')->get();
+
+        $query = $store->stock()->orderBy('brand')->orderBy('weight');
+
+        if ($request->filled('date_debut')) {
+            $query->whereDate('restocked_at', '>=', $request->date_debut);
+        }
+        if ($request->filled('date_fin')) {
+            $query->whereDate('restocked_at', '<=', $request->date_fin);
+        }
+
+        $stocks = $query->get();
 
         // Same defaults as admin/settings.blade.php's "Marques & Poids" tab,
         // so the dropdown isn't empty before an admin has explicitly saved
@@ -59,11 +69,21 @@ class StockController extends Controller
 
         if ($existing) {
             $existing->increment('quantity', $request->quantity);
-            $existing->update(['unit_price' => $request->unit_price, 'alert_threshold' => $request->alert_threshold]);
+            $existing->update([
+                'unit_price'       => $request->unit_price,
+                'alert_threshold'  => $request->alert_threshold,
+                // "Stock initial" = quantity resulting from this replenishment,
+                // stays fixed until the next restock even as quantity depletes.
+                'initial_quantity' => $existing->quantity,
+                'restocked_at'     => now(),
+            ]);
             return back()->with('success', 'Stock mis à jour avec succès.');
         }
 
-        $store->stock()->create($request->only('brand', 'weight', 'quantity', 'unit_price', 'alert_threshold'));
+        $store->stock()->create($request->only('brand', 'weight', 'quantity', 'unit_price', 'alert_threshold') + [
+            'initial_quantity' => $request->quantity,
+            'restocked_at'     => now(),
+        ]);
         return back()->with('success', 'Article ajouté au stock.');
     }
 

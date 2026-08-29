@@ -73,6 +73,25 @@
                     <span class="badge bg-red-100 text-red-800">Critique</span>
                 </div>
             </div>
+
+            {{-- Filtre par période de réapprovisionnement --}}
+            <form method="GET" class="flex flex-wrap items-end gap-3 mb-4 bg-gray-50 rounded-xl p-3">
+                <div>
+                    <label class="form-label text-xs">Date de début</label>
+                    <input type="date" name="date_debut" value="{{ request('date_debut') }}" class="form-input">
+                </div>
+                <div>
+                    <label class="form-label text-xs">Date de fin</label>
+                    <input type="date" name="date_fin" value="{{ request('date_fin') }}" class="form-input">
+                </div>
+                <button type="submit" class="btn btn-secondary"><i class="fas fa-filter"></i> Filtrer</button>
+                @if(request('date_debut') || request('date_fin'))
+                    <a href="{{ route('stock.index') }}" class="btn bg-gray-100 text-gray-600 hover:bg-gray-200">
+                        <i class="fas fa-times"></i> Réinitialiser
+                    </a>
+                @endif
+            </form>
+
             <div class="overflow-x-auto">
                 <table class="w-full text-sm">
                     <thead>
@@ -80,6 +99,7 @@
                             <th class="pb-3 font-semibold text-gray-600">Marque</th>
                             <th class="pb-3 font-semibold text-gray-600">Poids</th>
                             <th class="pb-3 font-semibold text-gray-600">Qté</th>
+                            <th class="pb-3 font-semibold text-gray-600">Stock initial</th>
                             <th class="pb-3 font-semibold text-gray-600">Prix unit.</th>
                             <th class="pb-3 font-semibold text-gray-600">Valeur</th>
                             <th class="pb-3 font-semibold text-gray-600">Statut</th>
@@ -94,6 +114,12 @@
                                 <td class="py-3 text-gray-600">{{ $item->weight }}</td>
                                 <td class="py-3 font-bold {{ $status === 'critical' ? 'text-red-600' : ($status === 'low' ? 'text-orange-600' : 'text-green-600') }}">
                                     {{ $item->quantity }}
+                                </td>
+                                <td class="py-3 text-gray-500">
+                                    {{ $item->initial_quantity ?? '—' }}
+                                    @if($item->restocked_at)
+                                        <div class="text-xs text-gray-400">{{ $item->restocked_at->format('d/m/Y') }}</div>
+                                    @endif
                                 </td>
                                 <td class="py-3 text-gray-600">{{ number_format($item->unit_price, 0, ',', ' ') }}</td>
                                 <td class="py-3 text-gray-600">{{ number_format($item->total_value, 0, ',', ' ') }}</td>
@@ -121,9 +147,13 @@
                                 </td>
                             </tr>
                         @empty
-                            <tr><td colspan="7" class="py-12 text-center text-gray-500">
+                            <tr><td colspan="8" class="py-12 text-center text-gray-500">
                                 <i class="fas fa-boxes text-4xl text-gray-200 block mb-3"></i>
-                                Aucun article en stock. Commencez par ajouter des articles.
+                                @if(request('date_debut') || request('date_fin'))
+                                    Aucun article réapprovisionné sur cette période.
+                                @else
+                                    Aucun article en stock. Commencez par ajouter des articles.
+                                @endif
                             </td></tr>
                         @endforelse
                     </tbody>

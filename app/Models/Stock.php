@@ -8,7 +8,17 @@ class Stock extends Model
 {
     protected $table = 'stock';
 
-    protected $fillable = ['store_id', 'brand', 'weight', 'quantity', 'unit_price', 'alert_threshold'];
+    protected $fillable = [
+        'store_id', 'brand', 'weight', 'quantity', 'initial_quantity',
+        'unit_price', 'alert_threshold', 'restocked_at',
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            'restocked_at' => 'datetime',
+        ];
+    }
 
     public function store()
     {
