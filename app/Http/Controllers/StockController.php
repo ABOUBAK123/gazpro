@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Store;
 use App\Models\Stock;
+use App\Models\AppSetting;
 
 class StockController extends Controller
 {
@@ -21,7 +22,18 @@ class StockController extends Controller
     {
         $store = $this->currentStore();
         $stocks = $store->stock()->orderBy('brand')->orderBy('weight')->get();
-        return view('store.stock.index', compact('store', 'stocks'));
+
+        $brands = collect(AppSetting::get('brands', []))
+            ->map(fn($b) => is_string($b) ? $b : ($b['name'] ?? null))
+            ->filter()
+            ->values();
+
+        $weights = collect(AppSetting::get('weights', []))
+            ->map(fn($w) => is_string($w) ? $w : ($w['value'] ?? null))
+            ->filter()
+            ->values();
+
+        return view('store.stock.index', compact('store', 'stocks', 'brands', 'weights'));
     }
 
     public function store(Request $request)

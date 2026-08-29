@@ -16,23 +16,31 @@
                 @csrf
                 <div>
                     <label class="form-label">Marque *</label>
-                    <input type="text" name="brand" list="brands" class="form-input" placeholder="Total, Shell, Oryx..." required value="{{ old('brand') }}">
-                    <datalist id="brands">
-                        @foreach($stocks->pluck('brand')->unique() as $b)
-                            <option value="{{ $b }}">
+                    @if($brands->isEmpty())
+                        <p class="text-xs text-amber-600 mb-1">
+                            <i class="fas fa-exclamation-triangle"></i> Aucune marque configurée — demandez à l'administrateur de les ajouter dans Paramètres → Marques &amp; Poids.
+                        </p>
+                    @endif
+                    <select name="brand" class="form-input" required {{ $brands->isEmpty() ? 'disabled' : '' }}>
+                        <option value="">-- Sélectionner --</option>
+                        @foreach($brands as $b)
+                            <option value="{{ $b }}" {{ old('brand') === $b ? 'selected' : '' }}>{{ $b }}</option>
                         @endforeach
-                        <option value="Total"><option value="Shell"><option value="Oryx"><option value="Kobil">
-                    </datalist>
+                    </select>
                 </div>
                 <div>
                     <label class="form-label">Poids / Type *</label>
-                    <input type="text" name="weight" list="weights" class="form-input" placeholder="6kg, 12kg, 25kg..." required value="{{ old('weight') }}">
-                    <datalist id="weights">
-                        @foreach($stocks->pluck('weight')->unique() as $w)
-                            <option value="{{ $w }}">
+                    @if($weights->isEmpty())
+                        <p class="text-xs text-amber-600 mb-1">
+                            <i class="fas fa-exclamation-triangle"></i> Aucun poids configuré — demandez à l'administrateur de les ajouter dans Paramètres → Marques &amp; Poids.
+                        </p>
+                    @endif
+                    <select name="weight" class="form-input" required {{ $weights->isEmpty() ? 'disabled' : '' }}>
+                        <option value="">-- Sélectionner --</option>
+                        @foreach($weights as $w)
+                            <option value="{{ $w }}" {{ old('weight') === $w ? 'selected' : '' }}>{{ $w }}</option>
                         @endforeach
-                        <option value="3kg"><option value="6kg"><option value="12kg"><option value="25kg"><option value="38kg">
-                    </datalist>
+                    </select>
                 </div>
                 <div class="grid grid-cols-2 gap-3">
                     <div>
