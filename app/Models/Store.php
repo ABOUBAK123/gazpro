@@ -24,6 +24,12 @@ class Store extends Authenticatable
             'password' => 'hashed',
             'subscription_expiry' => 'datetime',
             'qr_generated_at' => 'datetime',
+            // Without an explicit cast, MySQL decimal columns come back from
+            // PDO as strings — fine for Blade views, but breaks the Flutter
+            // app's `latitude as num?` JSON parsing (it expects a real
+            // number, not "5.3599510").
+            'latitude' => 'float',
+            'longitude' => 'float',
         ];
     }
 
