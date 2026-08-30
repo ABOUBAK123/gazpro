@@ -123,15 +123,14 @@ class MobileApiController extends Controller
 
     public function createOrder(Request $request)
     {
-        /** @var MobileUser $mobileUser */
-        $mobileUser = $request->attributes->get('mobileUser');
-
         $data = $request->validate([
             'storeId'         => 'required|exists:stores,id',
             'brand'           => 'required|string',
             'weight'          => 'required|string',
             'quantity'        => 'required|integer|min:1',
             'deliveryAddress' => 'required|string',
+            'clientName'      => 'required|string|max:255',
+            'clientPhone'     => 'required|string|max:20',
             'note'            => 'nullable|string',
         ]);
 
@@ -144,12 +143,16 @@ class MobileApiController extends Controller
             throw ValidationException::withMessages(['quantity' => 'Stock insuffisant pour cette commande.']);
         }
 
-        // Price and client identity are always derived server-side (stock
-        // price, authenticated mobile user) — never trusted from the request.
+        // Price always comes from the server-held stock price, never the
+        // request — that's the actual anti-fraud protection. clientName/
+        // clientPhone stay editable per order (e.g. ordering for someone
+        // else / a different delivery recipient than the account holder);
+        // they carry no financial weight and don't need to be locked to
+        // $mobileUser.
         $order = Order::create([
             'store_id'       => $data['storeId'],
-            'client_name'    => $mobileUser->name,
-            'client_phone'   => $mobileUser->phone,
+            'client_name'    => $data['clientName'],
+            'client_phone'   => $data['clientPhone'],
             'client_address' => $data['deliveryAddress'],
             'brand'          => $data['brand'],
             'weight'         => $data['weight'],
