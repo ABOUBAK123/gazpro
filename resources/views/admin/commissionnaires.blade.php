@@ -36,6 +36,17 @@
                             <div class="text-sm text-gray-600"><i class="fas fa-envelope w-4"></i> {{ $c->email }}</div>
                             <div class="text-sm text-gray-600"><i class="fas fa-phone w-4"></i> {{ $c->phone }}</div>
                             <div class="text-xs text-gray-400">Inscrit le {{ $c->created_at->format('d/m/Y à H:i') }}</div>
+                            @if($c->id_document_path)
+                                <a href="{{ route('admin.commissionnaires.document', $c) }}" target="_blank"
+                                   class="inline-flex items-center gap-1.5 text-xs text-blue-600 hover:underline mt-1">
+                                    <i class="fas fa-id-card"></i>
+                                    Voir la pièce d'identité ({{ $c->id_document_type === 'passeport' ? 'Passeport' : 'CNI' }})
+                                </a>
+                            @else
+                                <span class="inline-flex items-center gap-1.5 text-xs text-amber-600 mt-1">
+                                    <i class="fas fa-triangle-exclamation"></i> Aucune pièce d'identité fournie
+                                </span>
+                            @endif
                         </div>
                         <div class="flex gap-2">
                             <form action="{{ route('admin.commissionnaires.approve', $c) }}" method="POST">
@@ -72,6 +83,7 @@
                             <th class="pb-3 font-semibold text-gray-600">Code</th>
                             <th class="pb-3 font-semibold text-gray-600">Filleuls</th>
                             <th class="pb-3 font-semibold text-gray-600">Solde</th>
+                            <th class="pb-3 font-semibold text-gray-600">Pièce d'identité</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100">
@@ -82,9 +94,18 @@
                                 <td class="py-3"><span class="font-mono text-xs bg-gray-100 rounded px-2 py-1">{{ $c->code }}</span></td>
                                 <td class="py-3 text-gray-600">{{ $c->stores_count }}</td>
                                 <td class="py-3 font-semibold text-green-700">{{ number_format($c->balance, 0, ',', ' ') }} XOF</td>
+                                <td class="py-3">
+                                    @if($c->id_document_path)
+                                        <a href="{{ route('admin.commissionnaires.document', $c) }}" target="_blank" class="text-blue-600 hover:underline text-xs">
+                                            <i class="fas fa-id-card"></i> {{ $c->id_document_type === 'passeport' ? 'Passeport' : 'CNI' }}
+                                        </a>
+                                    @else
+                                        <span class="text-xs text-gray-400">—</span>
+                                    @endif
+                                </td>
                             </tr>
                         @empty
-                            <tr><td colspan="5" class="py-8 text-center text-gray-500">Aucun commissionnaire actif</td></tr>
+                            <tr><td colspan="6" class="py-8 text-center text-gray-500">Aucun commissionnaire actif</td></tr>
                         @endforelse
                     </tbody>
                 </table>

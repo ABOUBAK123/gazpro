@@ -42,7 +42,7 @@
         </div>
 
         <div class="px-8 pb-8 pt-4">
-            <form action="{{ route('register.commissionnaire') }}" method="POST" class="space-y-4">
+            <form action="{{ route('register.commissionnaire') }}" method="POST" enctype="multipart/form-data" class="space-y-4">
                 @csrf
 
                 <div>
@@ -77,9 +77,24 @@
                     </div>
                 </div>
 
+                <div>
+                    <label class="field-label">Pièce d'identité <span class="text-red-400">*</span></label>
+                    <select name="id_document_type" required class="field">
+                        <option value="">-- Choisir le type --</option>
+                        <option value="cni" {{ old('id_document_type') === 'cni' ? 'selected' : '' }}>Carte Nationale d'Identité (CNI)</option>
+                        <option value="passeport" {{ old('id_document_type') === 'passeport' ? 'selected' : '' }}>Passeport</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="field-label">Scan / photo de la pièce d'identité <span class="text-red-400">*</span></label>
+                    <input type="file" name="id_document" accept=".jpg,.jpeg,.png,.pdf" required class="field">
+                    <p class="text-xs text-gray-400 mt-1">JPG, PNG ou PDF — 4 Mo maximum.</p>
+                </div>
+
                 <div class="flex items-start gap-3 bg-blue-50 rounded-xl p-3.5 text-sm text-blue-700">
                     <i class="fas fa-clock mt-0.5 shrink-0"></i>
-                    <span>Votre demande sera examinée par l'administrateur. Un code de parrainage unique vous sera attribué après validation.</span>
+                    <span>Votre demande, y compris la pièce d'identité fournie, sera examinée par l'administrateur. Un code de parrainage unique vous sera attribué après validation.</span>
                 </div>
 
                 <div class="flex items-start gap-2.5">

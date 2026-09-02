@@ -9,7 +9,10 @@ class Commissionnaire extends Authenticatable
 {
     use Notifiable;
 
-    protected $fillable = ['name', 'email', 'phone', 'password', 'code', 'status', 'balance'];
+    protected $fillable = [
+        'name', 'email', 'phone', 'password', 'code', 'status', 'balance',
+        'id_document_type', 'id_document_path',
+    ];
 
     protected $hidden = ['password', 'remember_token'];
 

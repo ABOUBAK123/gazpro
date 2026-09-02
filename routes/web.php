@@ -109,6 +109,7 @@ Route::middleware(\App\Http\Middleware\AuthenticateAdmin::class)->prefix('admin'
     Route::get('/commissionnaires', [AdminCommissionnaireController::class, 'index'])->name('commissionnaires');
     Route::patch('/commissionnaires/{commissionnaire}/approve', [AdminCommissionnaireController::class, 'approve'])->name('commissionnaires.approve');
     Route::patch('/commissionnaires/{commissionnaire}/reject',  [AdminCommissionnaireController::class, 'reject'])->name('commissionnaires.reject');
+    Route::get('/commissionnaires/{commissionnaire}/document',  [AdminCommissionnaireController::class, 'document'])->name('commissionnaires.document');
     Route::get('/commissions', [AdminCommissionnaireController::class, 'transactions'])->name('commissions');
     Route::get('/currencies',              [AdminController::class, 'currencies'])->name('currencies');
     Route::post('/currencies',             [AdminController::class, 'storeCurrency'])->name('currencies.store');
